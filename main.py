@@ -83,6 +83,14 @@ def read_operator_pwa():
         return FileResponse(pwa_file)
     raise HTTPException(status_code=404, detail="Operator PWA UI not found")
 
+@app.get("/testing", tags=["Testing PWA"])
+def read_testing_pwa():
+    pwa_file = os.path.join(static_dir, "testing", "index.html")
+    if os.path.exists(pwa_file):
+        return FileResponse(pwa_file)
+    raise HTTPException(status_code=404, detail="Testing PWA UI not found")
+
+
 @app.get("/health", tags=["Health"])
 def health_check(db: Session = Depends(get_db)):
     try:

@@ -1,0 +1,9 @@
+{
+  "name": "Machinecraft Jacquard QA & Testing",
+  "short_name": "QA Testing",
+  "start_url": "/testing",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0284c7",
+  "description": "Mobile Quality Assurance & Testing Log app for Machinecraft Jacquard production floor."
+}
