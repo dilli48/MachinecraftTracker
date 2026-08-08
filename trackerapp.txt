@@ -1,0 +1,43 @@
+
+
+CREATE USER "SRIRAMSIR" WITH PASSWORD '2008@batch';
+CREATE DATABASE "Machinecraft" OWNER "SRIRAMSIR";
+GRANT ALL PRIVILEGES ON DATABASE "MachinecraftCompo" TO "SRIRAMSIR";
+
+psql -h localhost -U SRIRAMSIR -d Machinecraft  to enter data base 
+
+DROP TABLE IF EXISTS components;
+
+CREATE TABLE components (
+    id SERIAL PRIMARY KEY,
+    part_number VARCHAR(100) NOT NULL UNIQUE,
+    type VARCHAR(100),
+    footprint VARCHAR(100),
+    current_stock INTEGER NOT NULL DEFAULT 0,
+    minimum_threshold INTEGER NOT NULL DEFAULT 0,
+    comments TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+Launch Uvicorn server (./venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000).
+Use the browser subagent tool to open http://localhost:8000/.
+
+curl -I http://127.0.0.1:8000/ && curl -I http://127.0.0.1:8000/operator && curl -s http://127.0.0.1:8000/static/operator/manifest.json
+
+curl -s -o /dev/null -w "%{http_code}\n" http://192.168.1.100:8000/ && curl -s -o /dev/null -w "%{http_code}\n" http://192.168.1.100:8000/operator
+Accessing the Web Apps:
+Admin Dashboard: http://localhost:8000/
+Worker Mobile PWA: http://localhost:8000/operator
+Interactive API Docs: http://localhost:8000/docs
+
+App Component	Local Network URL	Device Target
+Worker Mobile PWA	http://192.168.1.100:8000/operator	Mobile Phones / Android devices on factory floor
+Admin Web Dashboard	http://192.168.1.100:8000/	Desktop / PC browsers
+API Documentation	http://192.168.1.100:8000/docs	API Swagger UI
+
+
+/home/machinecraft/MachineCraft/MachinecraftTracker
+./start_server.sh
+
+/home/machinecraft/MachineCraft/MachinecraftTracker
+./stop_server.sh

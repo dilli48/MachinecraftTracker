@@ -1,0 +1,22 @@
+{
+  "name": "Machinecraft Jacquard Operator App",
+  "short_name": "Operator PWA",
+  "description": "Mobile app for assembly logging and stock adjustments on the shop floor",
+  "start_url": "/operator",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f19",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

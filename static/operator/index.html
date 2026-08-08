@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+    <title>Machinecraft Jacquard Operator App</title>
+    <link rel="manifest" href="/static/operator/manifest.json">
+    <link rel="stylesheet" href="/static/operator/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="brand-mobile">
+            <div class="brand-logo">
+                <i class="fa-solid fa-industry"></i>
+            </div>
+            <div>
+                <div class="brand-title">Machinecraft Jacquard</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">Shop Floor Operator</div>
+            </div>
+        </div>
+
+
+        <button class="btn-scan-trigger" onclick="app.openScanner()" title="Scan Component Barcode">
+            <i class="fa-solid fa-barcode"></i>
+        </button>
+    </header>
+
+    <!-- Tab Bar -->
+    <nav class="tab-bar">
+        <div class="tab-item active" id="tab-btn-assembly" onclick="app.switchTab('assembly')">
+            <i class="fa-solid fa-gears"></i> Production Log
+        </div>
+        <div class="tab-item" id="tab-btn-stock" onclick="app.switchTab('stock')">
+            <i class="fa-solid fa-boxes-stacked"></i> Component Stock
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main>
+        <!-- Tab 1: Log Production Stage -->
+        <section id="tab-assembly" class="tab-content active">
+            <form id="assembly-form" onsubmit="app.submitAssembly(event)">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Production Stage Movement</span>
+                        <i class="fa-solid fa-wrench" style="color: var(--primary);"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="assm_operator_id">Operator Staff *</label>
+                        <select id="assm_operator_id" class="input-mobile" required>
+                            <option value="" disabled selected>-- Select Your Name --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="assm_line">Production Line Category *</label>
+                        <select id="assm_line" class="input-mobile" required onchange="app.onProductionLineChange()">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="assm_board_id">Product Board *</label>
+                        <select id="assm_board_id" class="input-mobile" required>
+                            <!-- Filtered dynamically by selected production line -->
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="assm_prev_stage">Previous Stage *</label>
+                        <select id="assm_prev_stage" class="input-mobile" required>
+                            <option value="Start">Start</option>
+                            <option value="Empty Board">Empty Board</option>
+                            <option value="SMD Pick and Place">SMD Pick and Place</option>
+                            <option value="Con. Pin Soldering">Con. Pin Soldering</option>
+                            <option value="Con. Dip Soldering">Con. Dip Soldering</option>
+                            <option value="Cleaning">Cleaning</option>
+                            <option value="Testing">Testing</option>
+                            <option value="Stock">Stock</option>
+                            <option value="Delivery">Delivery</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="assm_curr_stage">Current Stage *</label>
+                        <select id="assm_curr_stage" class="input-mobile" required>
+                            <option value="Start">Start</option>
+                            <option value="Empty Board">Empty Board</option>
+                            <option value="SMD Pick and Place" selected>SMD Pick and Place</option>
+                            <option value="Con. Pin Soldering">Con. Pin Soldering</option>
+                            <option value="Con. Dip Soldering">Con. Dip Soldering</option>
+                            <option value="Cleaning">Cleaning</option>
+                            <option value="Testing">Testing</option>
+                            <option value="Stock">Stock</option>
+                            <option value="Delivery">Delivery</option>
+                        </select>
+                    </div>
+
+
+
+                    <div class="form-group">
+                        <label>Units Processed / Shift *</label>
+                        <div class="stepper-container">
+                            <div class="btn-stepper" onclick="app.adjustValue('assm_qty', -10)">-10</div>
+                            <input type="number" id="assm_qty" class="input-mobile stepper-input" min="1" value="100" required>
+                            <div class="btn-stepper" onclick="app.adjustValue('assm_qty', 10)">+10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit-giant">
+                    <i class="fa-solid fa-check-circle"></i> SUBMIT PRODUCTION LOG
+                </button>
+            </form>
+        </section>
+
+        <!-- Tab 2: Stock Receive / Adjust -->
+        <section id="tab-stock" class="tab-content">
+            <form id="stock-form" onsubmit="app.submitStockAdjust(event)">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Select Component</span>
+                        <button type="button" class="btn-scan-trigger" style="width:36px; height:36px; font-size:0.9rem;" onclick="app.openScanner('stock-select')">
+                            <i class="fa-solid fa-barcode"></i>
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stock_part_select">Component Part Number *</label>
+                        <select id="stock_part_select" class="input-mobile" required onchange="app.onStockComponentChange()">
+                            <option value="" disabled selected>-- Select or Scan Barcode --</option>
+                        </select>
+                    </div>
+
+                    <div id="stock-current-info" style="display: none; background: rgba(99,102,241,0.1); border: 1px solid var(--primary); padding: 0.85rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Current Inventory</div>
+                        <div id="stock-display-val" style="font-family: var(--font-head); font-size: 1.6rem; font-weight: 800; color: #fff;">0</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quantity to Adjust *</label>
+                        <div class="stepper-container">
+                            <div class="btn-stepper" onclick="app.adjustValue('stock_qty', -5)">-5</div>
+                            <input type="number" id="stock_qty" class="input-mobile stepper-input" min="1" value="10" required>
+                            <div class="btn-stepper" onclick="app.adjustValue('stock_qty', 5)">+5</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stock_comments">Reason / Note</label>
+                        <input type="text" id="stock_comments" class="input-mobile" placeholder="e.g. Stock shipment received">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+                    <button type="button" class="btn-submit-giant" style="background: linear-gradient(135deg, var(--success), #059669);" onclick="app.processStockChange('add')">
+                        <i class="fa-solid fa-plus-circle"></i> RECEIVE (+)</button>
+                    <button type="button" class="btn-submit-giant" style="background: linear-gradient(135deg, var(--danger), #dc2626);" onclick="app.processStockChange('deduct')">
+                        <i class="fa-solid fa-minus-circle"></i> USE (-)</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- Barcode Scanner Modal -->
+    <div class="scanner-modal" id="scanner-modal">
+        <div class="scanner-header">
+            <div style="font-family: var(--font-head); font-weight: 700; font-size: 1.2rem;">Scan Component Barcode</div>
+            <button style="background:none; border:none; color:#fff; font-size:1.5rem;" onclick="app.closeScanner()">&times;</button>
+        </div>
+        <div id="reader"></div>
+        <div class="scanner-footer">Position reel barcode in camera view</div>
+    </div>
+
+    <!-- Toast Banner -->
+    <div id="toast-container"></div>
+
+    <script src="/static/operator/app.js"></script>
+</body>
+</html>

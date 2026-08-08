@@ -1,0 +1,488 @@
+import os
+from typing import List, Optional
+from datetime import datetime, date
+from fastapi import FastAPI, Depends, HTTPException, status, Query
+
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
+from sqlalchemy import text, func
+
+from database import engine, Base, get_db
+import models
+
+# Create database tables if they do not exist
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="Machinecraft Jacquard Production & Inventory API",
+    description="API for component inventory tracking, operators, product boards, and production stage tracking",
+    version="2.0.0",
+)
+
+# Enable CORS for web dashboards and mobile clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Automatically seed default operators and boards if tables are empty
+def seed_default_data():
+    db = next(get_db())
+    try:
+        if db.query(models.Operator).count() == 0:
+            default_operators = [
+                models.Operator(name="DilliBabu", email="dillibabu@machinecraft.com", is_active=True),
+            ]
+            db.add_all(default_operators)
+            db.commit()
+
+        if db.query(models.Board).count() == 0:
+            default_boards = [
+                models.Board(name="1PHASE BOARD", production_line_category="MACHINECRAFT JACQUARD"),
+            ]
+            db.add_all(default_boards)
+            db.commit()
+    except Exception as e:
+        print("Seed data check warning:", e)
+
+
+seed_default_data()
+
+# Serve static web dashboard and mobile PWA files
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+@app.get("/", tags=["Dashboard"])
+def read_root():
+    index_file = os.path.join(static_dir, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {
+        "message": "Welcome to Machinecraft Production & Inventory API",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
+@app.get("/dashboard", tags=["Dashboard"])
+def read_dashboard():
+    index_file = os.path.join(static_dir, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    raise HTTPException(status_code=404, detail="Dashboard UI not found")
+
+@app.get("/operator", tags=["Operator PWA"])
+def read_operator_pwa():
+    pwa_file = os.path.join(static_dir, "operator", "index.html")
+    if os.path.exists(pwa_file):
+        return FileResponse(pwa_file)
+    raise HTTPException(status_code=404, detail="Operator PWA UI not found")
+
+@app.get("/health", tags=["Health"])
+def health_check(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Database connection error: {str(e)}"
+        )
+
+
+# ==========================================
+# Components Endpoints
+# ==========================================
+
+@app.get("/api/components", response_model=List[models.ComponentResponse], tags=["Components"])
+def get_components(
+    type: Optional[str] = Query(None, description="Filter by component type"),
+    low_stock: Optional[bool] = Query(False, description="Filter components where current_stock <= minimum_threshold"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Component)
+    if type:
+        query = query.filter(models.Component.type.ilike(f"%{type}%"))
+    if low_stock:
+        query = query.filter(models.Component.current_stock <= models.Component.minimum_threshold)
+    return query.all()
+
+
+@app.post("/api/components", response_model=models.ComponentResponse, status_code=status.HTTP_201_CREATED, tags=["Components"])
+def create_component(
+    component_in: models.ComponentCreate,
+    db: Session = Depends(get_db)
+):
+    existing = db.query(models.Component).filter(
+        models.Component.part_number == component_in.part_number
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Component with part_number '{component_in.part_number}' already exists."
+        )
+    component = models.Component(**component_in.model_dump())
+    db.add(component)
+    db.commit()
+    db.refresh(component)
+    return component
+
+
+@app.get("/api/components/{part_number}", response_model=models.ComponentResponse, tags=["Components"])
+def get_component_by_part_number(
+    part_number: str,
+    db: Session = Depends(get_db)
+):
+    component = db.query(models.Component).filter(
+        models.Component.part_number == part_number
+    ).first()
+    if not component:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Component '{part_number}' not found."
+        )
+    return component
+
+
+@app.put("/api/components/{part_number}", response_model=models.ComponentResponse, tags=["Components"])
+def update_component(
+    part_number: str,
+    component_in: models.ComponentUpdate,
+    db: Session = Depends(get_db)
+):
+    component = db.query(models.Component).filter(
+        models.Component.part_number == part_number
+    ).first()
+    if not component:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Component '{part_number}' not found."
+        )
+    update_data = component_in.model_dump(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(component, field, val)
+    db.commit()
+    db.refresh(component)
+    return component
+
+
+@app.delete("/api/components/{part_number}", status_code=status.HTTP_204_NO_CONTENT, tags=["Components"])
+def delete_component(
+    part_number: str,
+    db: Session = Depends(get_db)
+):
+    component = db.query(models.Component).filter(
+        models.Component.part_number == part_number
+    ).first()
+    if not component:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Component '{part_number}' not found."
+        )
+    db.delete(component)
+    db.commit()
+    return None
+
+
+# ==========================================
+# Operators Endpoints
+# ==========================================
+
+@app.get("/api/operators", response_model=List[models.OperatorResponse], tags=["Operators"])
+def get_operators(
+    active_only: bool = Query(True, description="Return active operators only"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Operator)
+    if active_only:
+        query = query.filter(models.Operator.is_active == True)
+    return query.order_by(models.Operator.name.asc()).all()
+
+
+@app.post("/api/operators", response_model=models.OperatorResponse, status_code=status.HTTP_201_CREATED, tags=["Operators"])
+def create_operator(
+    operator_in: models.OperatorCreate,
+    db: Session = Depends(get_db)
+):
+    existing = db.query(models.Operator).filter(
+        models.Operator.name.ilike(operator_in.name)
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Operator '{operator_in.name}' already exists."
+        )
+    operator = models.Operator(**operator_in.model_dump())
+    db.add(operator)
+    db.commit()
+    db.refresh(operator)
+    return operator
+
+
+@app.put("/api/operators/{operator_id}", response_model=models.OperatorResponse, tags=["Operators"])
+def update_operator(
+    operator_id: int,
+    operator_in: models.OperatorUpdate,
+    db: Session = Depends(get_db)
+):
+    operator = db.query(models.Operator).filter(models.Operator.id == operator_id).first()
+    if not operator:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Operator not found")
+    update_data = operator_in.model_dump(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(operator, field, val)
+    db.commit()
+    db.refresh(operator)
+    return operator
+
+
+# ==========================================
+# Boards Endpoints
+# ==========================================
+
+@app.get("/api/boards", response_model=List[models.BoardResponse], tags=["Boards"])
+def get_boards(db: Session = Depends(get_db)):
+    return db.query(models.Board).order_by(models.Board.name.asc()).all()
+
+
+@app.post("/api/boards", response_model=models.BoardResponse, status_code=status.HTTP_201_CREATED, tags=["Boards"])
+def create_board(
+    board_in: models.BoardCreate,
+    db: Session = Depends(get_db)
+):
+    existing = db.query(models.Board).filter(models.Board.name.ilike(board_in.name)).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Board '{board_in.name}' already exists.")
+    board = models.Board(**board_in.model_dump())
+    db.add(board)
+    db.commit()
+    db.refresh(board)
+    return board
+
+
+@app.put("/api/boards/{board_id}", response_model=models.BoardResponse, tags=["Boards"])
+def update_board(
+    board_id: int,
+    board_in: models.BoardUpdate,
+    db: Session = Depends(get_db)
+):
+    board = db.query(models.Board).filter(models.Board.id == board_id).first()
+    if not board:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
+    update_data = board_in.model_dump(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(board, field, val)
+    db.commit()
+    db.refresh(board)
+    return board
+
+
+# ==========================================
+# Production Stage Tracking Endpoints
+# ==========================================
+
+@app.post("/api/production/log", status_code=status.HTTP_201_CREATED, tags=["Production Tracking"])
+def create_production_log(
+    payload: models.ProductionLogCreate,
+    db: Session = Depends(get_db)
+):
+    operator = db.query(models.Operator).filter(models.Operator.id == payload.operator_id).first()
+    if not operator:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Operator ID {payload.operator_id} not found.")
+
+    board = db.query(models.Board).filter(models.Board.id == payload.board_type_id).first()
+    if not board:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Board ID {payload.board_type_id} not found.")
+
+    previous_stage = (payload.previous_stage or "Start").strip()
+    current_stage = (payload.current_stage or "SMD Pick and Place").strip()
+
+    # If previous_stage is NOT "Start", check available quantity at previous_stage
+    if previous_stage.lower() != "start":
+        additions = db.query(func.sum(models.ProductionLog.quantity)).filter(
+            models.ProductionLog.board_type_id == payload.board_type_id,
+            models.ProductionLog.current_stage == previous_stage
+        ).scalar() or 0
+
+        deductions = db.query(func.sum(models.ProductionLog.quantity)).filter(
+            models.ProductionLog.board_type_id == payload.board_type_id,
+            models.ProductionLog.previous_stage == previous_stage
+        ).scalar() or 0
+
+        available_qty = additions - deductions
+
+        if available_qty < payload.quantity:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot move stage: Insufficient stock at stage '{previous_stage}' for product '{board.name}'. Available: {available_qty} units, requested: {payload.quantity} units."
+            )
+
+    log_entry = models.ProductionLog(
+        operator_id=payload.operator_id,
+        production_line=payload.production_line or "MACHINECRAFT JACQUARD",
+        board_type_id=payload.board_type_id,
+        previous_stage=previous_stage,
+        current_stage=current_stage,
+        quantity=payload.quantity
+    )
+
+    db.add(log_entry)
+    db.commit()
+    db.refresh(log_entry)
+
+    return {
+        "status": "success",
+        "message": f"Successfully moved {payload.quantity} units of {board.name} from {previous_stage} to {current_stage} by {operator.name}.",
+        "id": log_entry.id
+    }
+
+
+
+@app.get("/api/production/logs", response_model=List[models.ProductionLogResponse], tags=["Production Tracking"])
+def get_production_logs(
+    limit: int = Query(100, ge=1, le=1000),
+    log_date: Optional[str] = Query(None, alias="date", description="Filter by YYYY-MM-DD date"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.ProductionLog)
+    if log_date:
+        try:
+            target_date = datetime.strptime(log_date.strip(), "%Y-%m-%d").date()
+            query = query.filter(func.date(models.ProductionLog.timestamp) == target_date)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date format. Expected YYYY-MM-DD.")
+    logs = query.order_by(models.ProductionLog.timestamp.desc()).limit(limit).all()
+    
+    result = []
+    for log in logs:
+        result.append(models.ProductionLogResponse(
+            id=log.id,
+            timestamp=log.timestamp,
+            operator_id=log.operator_id,
+            operator_name=log.operator.name if log.operator else "Unknown Operator",
+            production_line=log.production_line,
+            board_type_id=log.board_type_id,
+            board_name=log.board.name if log.board else "Unknown Board",
+            previous_stage=log.previous_stage,
+            current_stage=log.current_stage,
+            quantity=log.quantity
+        ))
+    return result
+
+
+@app.delete("/api/production/logs/{log_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Production Tracking"])
+def delete_production_log(
+    log_id: int,
+    db: Session = Depends(get_db)
+):
+    log_entry = db.query(models.ProductionLog).filter(models.ProductionLog.id == log_id).first()
+    if not log_entry:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Production log #{log_id} not found.")
+    
+    db.delete(log_entry)
+    db.commit()
+    return None
+
+
+
+@app.get("/api/production/stage-stock", tags=["Production Tracking"])
+def get_stage_stock(
+    board_type_id: Optional[int] = Query(None, description="Filter by board ID"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.ProductionLog)
+    if board_type_id:
+        query = query.filter(models.ProductionLog.board_type_id == board_type_id)
+    all_logs = query.all()
+
+    stock_map = {}
+    for log in all_logs:
+        b_id = log.board_type_id
+        if log.current_stage:
+            k_curr = (b_id, log.current_stage)
+            stock_map[k_curr] = stock_map.get(k_curr, 0) + log.quantity
+
+        if log.previous_stage and log.previous_stage.strip().lower() != "start":
+            k_prev = (b_id, log.previous_stage)
+            stock_map[k_prev] = stock_map.get(k_prev, 0) - log.quantity
+
+    result = []
+    for (b_id, stage), qty in stock_map.items():
+        if qty != 0:
+            board = db.query(models.Board).filter(models.Board.id == b_id).first()
+            result.append({
+                "board_id": b_id,
+                "board_name": board.name if board else "Unknown Board",
+                "stage": stage,
+                "available_quantity": qty
+            })
+    return result
+
+
+PRODUCTION_STAGES = [
+    "Empty Board",
+    "SMD Pick and Place",
+    "Con. Pin Soldering",
+    "Con. Dip Soldering",
+    "Cleaning",
+    "Testing",
+    "Stock",
+    "Delivery"
+]
+
+@app.get("/api/production/stage-matrix", tags=["Production Tracking"])
+def get_stage_matrix(
+    production_line: Optional[str] = Query(None, description="Filter by production line category"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Board)
+    if production_line:
+        query = query.filter(models.Board.production_line_category == production_line)
+    boards = query.order_by(models.Board.name.asc()).all()
+
+    matrix = []
+    for board in boards:
+        additions_rows = db.query(
+            models.ProductionLog.current_stage,
+            func.sum(models.ProductionLog.quantity)
+        ).filter(
+            models.ProductionLog.board_type_id == board.id
+        ).group_by(models.ProductionLog.current_stage).all()
+        additions = {stage: qty for stage, qty in additions_rows if stage}
+
+        deductions_rows = db.query(
+            models.ProductionLog.previous_stage,
+            func.sum(models.ProductionLog.quantity)
+        ).filter(
+            models.ProductionLog.board_type_id == board.id,
+            models.ProductionLog.previous_stage.isnot(None)
+        ).group_by(models.ProductionLog.previous_stage).all()
+        deductions = {stage: qty for stage, qty in deductions_rows if stage and stage.strip().lower() != "start"}
+
+        stage_quantities = {}
+        total_wip = 0
+        for stage in PRODUCTION_STAGES:
+            qty = additions.get(stage, 0) - deductions.get(stage, 0)
+            qty = max(0, qty)
+            stage_quantities[stage] = qty
+            total_wip += qty
+
+        matrix.append({
+            "board_id": board.id,
+            "board_name": board.name,
+            "production_line_category": board.production_line_category,
+            "stage_quantities": stage_quantities,
+            "total_wip": total_wip
+        })
+
+    return {
+        "stages": PRODUCTION_STAGES,
+        "matrix": matrix
+    }
+
+
