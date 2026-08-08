@@ -98,13 +98,13 @@ header {
     color: #fff;
 }
 
-/* Navigation Tabs */
 .tab-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     background: rgba(15, 23, 42, 0.7);
     border-bottom: 1px solid var(--border-color);
 }
+
 
 .tab-item {
     padding: 0.85rem;

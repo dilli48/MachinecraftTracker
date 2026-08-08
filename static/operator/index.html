@@ -35,10 +35,14 @@
         <div class="tab-item active" id="tab-btn-assembly" onclick="app.switchTab('assembly')">
             <i class="fa-solid fa-gears"></i> Production Log
         </div>
+        <div class="tab-item" id="tab-btn-testing" onclick="app.switchTab('testing')">
+            <i class="fa-solid fa-vial-circle-check"></i> Testing Log
+        </div>
         <div class="tab-item" id="tab-btn-stock" onclick="app.switchTab('stock')">
-            <i class="fa-solid fa-boxes-stacked"></i> Component Stock
+            <i class="fa-solid fa-boxes-stacked"></i> Stock
         </div>
     </nav>
+
 
     <!-- Main Container -->
     <main>
@@ -121,8 +125,84 @@
             </form>
         </section>
 
-        <!-- Tab 2: Stock Receive / Adjust -->
+        <!-- Tab 2: Testing Log -->
+        <section id="tab-testing" class="tab-content">
+            <form id="testing-form" onsubmit="app.submitTestingReport(event)">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Log Test Report</span>
+                        <i class="fa-solid fa-vial-circle-check" style="color: var(--primary);"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test_operator_id">Operator Staff *</label>
+                        <select id="test_operator_id" class="input-mobile" required>
+                            <option value="" disabled selected>-- Select Your Name --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test_line">Production Line Category *</label>
+                        <select id="test_line" class="input-mobile" required onchange="app.onTestingLineChange()">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test_board_id">Product Board Model *</label>
+                        <select id="test_board_id" class="input-mobile" required>
+                            <!-- Filtered dynamically by selected production line -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test_serial_number">Board Serial Number *</label>
+                        <input type="text" id="test_serial_number" class="input-mobile" required placeholder="e.g. SN-JAC-2026-001">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test_type">Test Type *</label>
+                        <select id="test_type" class="input-mobile" required onchange="app.onTestTypeChange()">
+                            <option value="8_HOURS_ON_OFF" selected>8 Hours On/Off Test</option>
+                            <option value="SECO_BOARD_QA">Seco Board QA Test</option>
+                            <option value="DISPLAY_UNIT_QA">Display Unit QA Test</option>
+                            <option value="CUSTOM_QA">Custom QA Test</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test_overall_status">Overall Outcome *</label>
+                        <select id="test_overall_status" class="input-mobile" required>
+                            <option value="PASS" selected>PASS 🟢</option>
+                            <option value="FAIL">FAIL 🔴</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label for="test_data_json" style="margin-bottom: 0;">Test Data Metrics (JSON) *</label>
+                            <button type="button" style="background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #fff; padding: 0.25rem 0.55rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer;" onclick="app.loadTestTemplate()">
+                                Reset Template
+                            </button>
+                        </div>
+                        <textarea id="test_data_json" class="input-mobile" style="height: 130px; padding: 0.75rem; font-family: monospace; font-size: 0.85rem; line-height: 1.4;" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test_remarks">Remarks / Observations</label>
+                        <input type="text" id="test_remarks" class="input-mobile" placeholder="Optional technician notes...">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit-giant" style="background: linear-gradient(135deg, #0284c7, var(--primary));">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> SUBMIT TEST REPORT
+                </button>
+            </form>
+        </section>
+
+        <!-- Tab 3: Stock Receive / Adjust -->
         <section id="tab-stock" class="tab-content">
+
             <form id="stock-form" onsubmit="app.submitStockAdjust(event)">
                 <div class="card">
                     <div class="card-title">
