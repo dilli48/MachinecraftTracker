@@ -418,5 +418,9 @@ label {
     to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-.toast-success { border-left: 4px solid var(--success); }
-.toast-danger { border-left: 4px solid var(--danger); }
+.row-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+

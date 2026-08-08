@@ -141,26 +141,160 @@ const app = {
     },
 
     onModalTestTypeChange() {
-        this.loadModalTestTemplate();
+        this.renderModalTestFields();
     },
 
-    loadModalTestTemplate() {
-        const typeSelect = document.getElementById('modal_test_type');
-        const textarea = document.getElementById('modal_test_data_json');
-        if (!typeSelect || !textarea) return;
+    renderModalTestFields(existingData = {}) {
+        const container = document.getElementById('dynamic-test-fields');
+        if (!container) return;
 
-        textarea.value = JSON.stringify(this.getTemplateData(typeSelect.value), null, 4);
+        const testType = document.getElementById('modal_test_type').value;
+        let html = '';
+
+        if (testType === '8_HOURS_ON_OFF') {
+            const onTime = existingData.on_time || "09:00:00";
+            const offTime = existingData.off_time || "17:00:00";
+            const cycleCount = existingData.cycle_count !== undefined ? existingData.cycle_count : 120;
+
+            html = `
+                <div class="row-2col">
+                    <div class="form-group">
+                        <label for="param_on_time">ON Time (HH:MM:SS) *</label>
+                        <input type="text" id="param_on_time" class="input-mobile" value="${this.escapeHtml(onTime)}" placeholder="09:00:00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="param_off_time">OFF Time (HH:MM:SS)</label>
+                        <input type="text" id="param_off_time" class="input-mobile" value="${this.escapeHtml(offTime)}" placeholder="17:00:00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="param_cycle_count">Cycle Count *</label>
+                    <input type="number" id="param_cycle_count" class="input-mobile" value="${cycleCount}" min="0" required>
+                </div>
+            `;
+        } else if (testType === 'SECO_BOARD_QA') {
+            const fw = existingData.firmware_version || "v2.1.4";
+            const can = existingData.can_bus_communication || "OK";
+            const spi = existingData.spi_flash_test || "PASS";
+            const v33 = existingData.voltage_3v3 !== undefined ? existingData.voltage_3v3 : 3.31;
+            const v50 = existingData.voltage_5v !== undefined ? existingData.voltage_5v : 5.02;
+
+            html = `
+                <div class="form-group">
+                    <label for="param_firmware_version">Firmware Version</label>
+                    <input type="text" id="param_firmware_version" class="input-mobile" value="${this.escapeHtml(fw)}">
+                </div>
+                <div class="row-2col">
+                    <div class="form-group">
+                        <label for="param_can_bus">CAN Bus</label>
+                        <select id="param_can_bus" class="input-mobile">
+                            <option value="OK" ${can === 'OK' ? 'selected' : ''}>OK 🟢</option>
+                            <option value="FAIL" ${can === 'FAIL' ? 'selected' : ''}>FAIL 🔴</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="param_spi_flash">SPI Flash</label>
+                        <select id="param_spi_flash" class="input-mobile">
+                            <option value="PASS" ${spi === 'PASS' ? 'selected' : ''}>PASS 🟢</option>
+                            <option value="FAIL" ${spi === 'FAIL' ? 'selected' : ''}>FAIL 🔴</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-2col">
+                    <div class="form-group">
+                        <label for="param_voltage_3v3">Voltage 3.3V</label>
+                        <input type="number" step="0.01" id="param_voltage_3v3" class="input-mobile" value="${v33}">
+                    </div>
+                    <div class="form-group">
+                        <label for="param_voltage_5v">Voltage 5.0V</label>
+                        <input type="number" step="0.01" id="param_voltage_5v" class="input-mobile" value="${v50}">
+                    </div>
+                </div>
+            `;
+        } else if (testType === 'DISPLAY_UNIT_QA') {
+            const res = existingData.display_resolution || "1024x600";
+            const calib = existingData.touch_screen_calibration || "PASSED";
+            const nits = existingData.backlight_brightness_nits !== undefined ? existingData.backlight_brightness_nits : 450;
+            const defects = existingData.pixel_defect_count !== undefined ? existingData.pixel_defect_count : 0;
+
+            html = `
+                <div class="form-group">
+                    <label for="param_display_res">Display Resolution</label>
+                    <input type="text" id="param_display_res" class="input-mobile" value="${this.escapeHtml(res)}">
+                </div>
+                <div class="form-group">
+                    <label for="param_touch_calib">Touch Calibration</label>
+                    <select id="param_touch_calib" class="input-mobile">
+                        <option value="PASSED" ${calib === 'PASSED' ? 'selected' : ''}>PASSED 🟢</option>
+                        <option value="FAILED" ${calib === 'FAILED' ? 'selected' : ''}>FAILED 🔴</option>
+                    </select>
+                </div>
+                <div class="row-2col">
+                    <div class="form-group">
+                        <label for="param_backlight_nits">Backlight (Nits)</label>
+                        <input type="number" id="param_backlight_nits" class="input-mobile" value="${nits}">
+                    </div>
+                    <div class="form-group">
+                        <label for="param_pixel_defects">Pixel Defects</label>
+                        <input type="number" id="param_pixel_defects" class="input-mobile" value="${defects}">
+                    </div>
+                </div>
+            `;
+        } else {
+            const val1 = existingData.custom_metric_1 || "OK";
+            const val2 = existingData.custom_value_2 !== undefined ? existingData.custom_value_2 : 100;
+            html = `
+                <div class="form-group">
+                    <label for="param_custom_1">Custom Metric 1</label>
+                    <input type="text" id="param_custom_1" class="input-mobile" value="${this.escapeHtml(val1)}">
+                </div>
+                <div class="form-group">
+                    <label for="param_custom_2">Custom Metric 2</label>
+                    <input type="number" id="param_custom_2" class="input-mobile" value="${val2}">
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+    },
+
+    collectModalTestData() {
+        const testType = document.getElementById('modal_test_type').value;
+
+        if (testType === '8_HOURS_ON_OFF') {
+            return {
+                on_time: document.getElementById('param_on_time')?.value.trim() || "09:00:00",
+                off_time: document.getElementById('param_off_time')?.value.trim() || "17:00:00",
+                cycle_count: parseInt(document.getElementById('param_cycle_count')?.value, 10) || 0
+            };
+        } else if (testType === 'SECO_BOARD_QA') {
+            return {
+                firmware_version: document.getElementById('param_firmware_version')?.value.trim() || "v2.1.4",
+                can_bus_communication: document.getElementById('param_can_bus')?.value || "OK",
+                spi_flash_test: document.getElementById('param_spi_flash')?.value || "PASS",
+                voltage_3v3: parseFloat(document.getElementById('param_voltage_3v3')?.value) || 3.31,
+                voltage_5v: parseFloat(document.getElementById('param_voltage_5v')?.value) || 5.02
+            };
+        } else if (testType === 'DISPLAY_UNIT_QA') {
+            return {
+                display_resolution: document.getElementById('param_display_res')?.value.trim() || "1024x600",
+                touch_screen_calibration: document.getElementById('param_touch_calib')?.value || "PASSED",
+                backlight_brightness_nits: parseInt(document.getElementById('param_backlight_nits')?.value, 10) || 450,
+                pixel_defect_count: parseInt(document.getElementById('param_pixel_defects')?.value, 10) || 0
+            };
+        }
+        return {
+            custom_metric_1: document.getElementById('param_custom_1')?.value.trim() || "OK",
+            custom_value_2: parseInt(document.getElementById('param_custom_2')?.value, 10) || 100
+        };
     },
 
     getTemplateData(type) {
         if (type === '8_HOURS_ON_OFF') {
             return {
-                voltage_v: 230,
-                temperature_celsius: 42.5,
-                burn_in_hours: 8,
-                cycles_completed: 480,
-                power_draw_watts: 18.4,
-                fan_speed_rpm: 2400
+                on_time: "09:00:00",
+                off_time: "17:00:00",
+                cycle_count: 120
             };
         } else if (type === 'SECO_BOARD_QA') {
             return {
@@ -168,16 +302,14 @@ const app = {
                 can_bus_communication: "OK",
                 spi_flash_test: "PASS",
                 voltage_3v3: 3.31,
-                voltage_5v: 5.02,
-                sensor_channels: [1, 2, 3, 4]
+                voltage_5v: 5.02
             };
         } else if (type === 'DISPLAY_UNIT_QA') {
             return {
                 display_resolution: "1024x600",
                 touch_screen_calibration: "PASSED",
                 backlight_brightness_nits: 450,
-                pixel_defect_count: 0,
-                hmi_boot_time_sec: 4.2
+                pixel_defect_count: 0
             };
         }
         return {
@@ -186,42 +318,53 @@ const app = {
         };
     },
 
-    async submitTestingReport(event) {
+    async openUpdateOutcomeModal(serialNumber, productName) {
+        document.getElementById('modal_serial_display').value = serialNumber;
+
+        let existingData = {};
+        try {
+            const res = await fetch(`/api/testing/reports?serial_number=${encodeURIComponent(serialNumber)}`);
+            if (res.ok) {
+                const reports = await res.json();
+                if (reports.length > 0) {
+                    const latest = reports[0];
+                    existingData = latest.test_data || {};
+                    if (latest.test_type) {
+                        document.getElementById('modal_test_type').value = latest.test_type;
+                    }
+                    if (latest.operator_id) {
+                        document.getElementById('modal_operator_id').value = latest.operator_id;
+                    }
+                    if (latest.remarks) {
+                        document.getElementById('modal_remarks').value = latest.remarks;
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error fetching existing report for modal:', e);
+        }
+
+        this.renderModalTestFields(existingData);
+        document.getElementById('update-outcome-modal').classList.add('active');
+    },
+
+    async submitFinalOutcome(event) {
         event.preventDefault();
-        const operatorSelect = document.getElementById('test_operator_id');
-        const boardSelect = document.getElementById('test_board_id');
-        const serialInput = document.getElementById('test_serial_number');
+        const board_serial_number = document.getElementById('modal_serial_display').value;
+        const operator_id = parseInt(document.getElementById('modal_operator_id').value, 10);
+        const test_type = document.getElementById('modal_test_type').value;
+        const overall_status = document.getElementById('modal_final_status').value;
+        const remarks = document.getElementById('modal_remarks').value.trim() || null;
 
-        const operator_id = parseInt(operatorSelect.value, 10);
-        const product_id = parseInt(boardSelect.value, 10);
-        const board_serial_number = serialInput.value.trim();
-        const test_type = document.getElementById('test_type').value;
-        const overall_status = document.getElementById('test_overall_status').value;
-        const remarks = document.getElementById('test_remarks').value.trim() || null;
-
-
-        if (!operator_id || !product_id || !board_serial_number) {
-            this.showToast('Please select Operator, Board Model, and enter Serial Number', 'danger');
+        if (!operator_id) {
+            this.showToast('Please select Operator Staff', 'danger');
             return;
         }
 
-        let test_data = {};
-        const jsonEl = document.getElementById('test_data_json');
-        if (jsonEl && jsonEl.value.trim()) {
-            try {
-                test_data = JSON.parse(jsonEl.value);
-            } catch (err) {
-                this.showToast('Invalid JSON format in Test Data Metrics field!', 'danger');
-                return;
-            }
-        } else {
-            test_data = this.getTemplateData(test_type);
-        }
-
+        const test_data = this.collectModalTestData();
 
         const payload = {
             board_serial_number,
-            product_id,
             operator_id,
             test_type,
             overall_status,
@@ -238,111 +381,10 @@ const app = {
 
             if (res.ok) {
                 if (overall_status === 'IN_TESTING') {
-                    this.showToast(`Serial ${board_serial_number} placed IN-TESTING queue!`, 'success');
-                    this.switchTab('undertest');
+                    this.showToast(`Saved progress for ${board_serial_number}!`, 'success');
                 } else {
-                    this.showToast(`Test Report logged for ${board_serial_number}!`, 'success');
+                    this.showToast(`Board ${board_serial_number} marked ${overall_status}!`, 'success');
                 }
-                document.getElementById('test_serial_number').value = '';
-                document.getElementById('test_remarks').value = '';
-                await Promise.all([
-                    this.fetchUnderTestBoards(),
-                    this.fetchReports()
-                ]);
-            } else {
-                const err = await res.json();
-                this.showToast(err.detail || 'Failed to log test report', 'danger');
-            }
-        } catch (e) {
-            this.showToast('Submission error: ' + e.message, 'danger');
-        }
-    },
-
-    renderUnderTestList() {
-        const container = document.getElementById('undertest-list-container');
-        const badge = document.getElementById('undertest-badge');
-        const pill = document.getElementById('undertest-count-pill');
-        
-        const countStr = `${this.underTestList.length}`;
-        if (badge) badge.innerText = `${countStr} Active`;
-        if (pill) pill.innerText = countStr;
-
-        if (!container) return;
-
-        if (this.underTestList.length === 0) {
-            container.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">No boards currently under test.</div>`;
-            return;
-        }
-
-        container.innerHTML = this.underTestList.map(b => {
-            const dateStr = new Date(b.manufactured_date).toLocaleString('en-IN', {
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-
-            return `
-                <div class="report-item">
-                    <div class="report-header">
-                        <div class="serial-badge"><i class="fa-solid fa-microchip" style="color: var(--warning); margin-right: 4px;"></i> ${this.escapeHtml(b.serial_number)}</div>
-                        <span class="status-tag status-testing">IN-TESTING 🟡</span>
-                    </div>
-                    <div class="report-meta">
-                        <div><strong>Model:</strong> ${this.escapeHtml(b.product_name)}</div>
-                        <div><strong>Started:</strong> ${dateStr}</div>
-                    </div>
-                    <button class="btn-update-outcome" onclick="app.openUpdateOutcomeModal('${this.escapeHtml(b.serial_number)}', '${this.escapeHtml(b.product_name)}')">
-                        <i class="fa-solid fa-square-check"></i> UPDATE OUTCOME (PASS / REJECT)
-                    </button>
-                </div>
-            `;
-        }).join('');
-    },
-
-    openUpdateOutcomeModal(serialNumber, productName) {
-        document.getElementById('modal_serial_display').value = serialNumber;
-        this.loadModalTestTemplate();
-        document.getElementById('update-outcome-modal').classList.add('active');
-    },
-
-    async submitFinalOutcome(event) {
-        event.preventDefault();
-        const board_serial_number = document.getElementById('modal_serial_display').value;
-        const operator_id = parseInt(document.getElementById('modal_operator_id').value, 10);
-        const test_type = document.getElementById('modal_test_type').value;
-        const overall_status = document.getElementById('modal_final_status').value;
-        const jsonText = document.getElementById('modal_test_data_json').value;
-        const remarks = document.getElementById('modal_remarks').value.trim() || null;
-
-        if (!operator_id) {
-            this.showToast('Please select Operator Staff', 'danger');
-            return;
-        }
-
-        let test_data = {};
-        try {
-            test_data = JSON.parse(jsonText);
-        } catch (err) {
-            this.showToast('Invalid JSON format in Test Data Metrics field!', 'danger');
-            return;
-        }
-
-        const payload = {
-            board_serial_number,
-            operator_id,
-            test_type,
-            overall_status,
-            test_data,
-            remarks
-        };
-
-        try {
-            const res = await fetch('/api/testing/log-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                this.showToast(`Board ${board_serial_number} updated to ${overall_status}!`, 'success');
                 this.closeModal('update-outcome-modal');
                 await Promise.all([
                     this.fetchUnderTestBoards(),
@@ -356,6 +398,7 @@ const app = {
             this.showToast('Submission error: ' + e.message, 'danger');
         }
     },
+
 
     renderReportsList() {
         const container = document.getElementById('reports-list-container');
