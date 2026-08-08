@@ -585,9 +585,8 @@ def create_test_report(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Operator ID {payload.operator_id} not found.")
 
     overall_status = payload.overall_status.upper().strip()
-    if overall_status not in ["PASS", "FAIL"]:
+    if overall_status not in ["PASS", "FAIL", "IN_TESTING"]:
         overall_status = "PASS"
-
 
     report = models.TestReport(
         board_serial_number=payload.board_serial_number.strip(),
@@ -602,6 +601,9 @@ def create_test_report(
         phys_board.current_status = "PASSED"
     elif overall_status == "FAIL":
         phys_board.current_status = "REJECTED"
+    elif overall_status == "IN_TESTING":
+        phys_board.current_status = "IN_TESTING"
+
 
     db.add(report)
     db.commit()

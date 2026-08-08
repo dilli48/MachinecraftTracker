@@ -31,16 +31,19 @@
     <!-- Navigation Tabs -->
     <nav class="tab-bar">
         <div class="tab-item active" id="tab-btn-log" onclick="app.switchTab('log')">
-            <i class="fa-solid fa-pen-to-square"></i> Log Test Report
+            <i class="fa-solid fa-pen-to-square"></i> Log Test
+        </div>
+        <div class="tab-item" id="tab-btn-undertest" onclick="app.switchTab('undertest')">
+            <i class="fa-solid fa-clock-rotate-left"></i> In-Testing <span id="undertest-count-pill" class="pill-badge">0</span>
         </div>
         <div class="tab-item" id="tab-btn-history" onclick="app.switchTab('history')">
-            <i class="fa-solid fa-list-check"></i> Recent Test Logs
+            <i class="fa-solid fa-list-check"></i> History
         </div>
     </nav>
 
     <!-- Main Container -->
     <main>
-        <!-- Tab 1: Log Test Report -->
+        <!-- Tab 1: Start / Log Test Report -->
         <section id="tab-log" class="tab-content active">
             <form id="testing-form" onsubmit="app.submitTestingReport(event)">
                 <div class="card">
@@ -86,10 +89,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="test_overall_status">Overall Outcome *</label>
+                        <label for="test_overall_status">Test Status / Outcome *</label>
                         <select id="test_overall_status" class="input-mobile" required>
-                            <option value="PASS" selected>PASS 🟢</option>
-                            <option value="FAIL">FAIL 🔴</option>
+                            <option value="IN_TESTING" selected>IN-TESTING 🟡 (Add to Active Testing Queue)</option>
+                            <option value="PASS">PASS 🟢 (Complete Test Immediately)</option>
+                            <option value="FAIL">FAIL 🔴 (Complete Test Immediately)</option>
                         </select>
                     </div>
 
@@ -100,7 +104,7 @@
                                 Reset Template
                             </button>
                         </div>
-                        <textarea id="test_data_json" class="input-mobile" style="height: 140px; padding: 0.75rem; font-family: monospace; font-size: 0.85rem; line-height: 1.4;" required></textarea>
+                        <textarea id="test_data_json" class="input-mobile" style="height: 130px; padding: 0.75rem; font-family: monospace; font-size: 0.85rem; line-height: 1.4;" required></textarea>
                     </div>
 
                     <div class="form-group">
@@ -110,16 +114,29 @@
                 </div>
 
                 <button type="submit" class="btn-submit-giant">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> SUBMIT TEST REPORT
+                    <i class="fa-solid fa-cloud-arrow-up"></i> SUBMIT / START TEST LOG
                 </button>
             </form>
         </section>
 
-        <!-- Tab 2: Recent Test Logs -->
+        <!-- Tab 2: Boards Under Test (Active Queue) -->
+        <section id="tab-undertest" class="tab-content">
+            <div class="card">
+                <div class="card-title">
+                    <span>Boards Currently Under Test</span>
+                    <span id="undertest-badge" class="badge-count" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">0 Active</span>
+                </div>
+                <div id="undertest-list-container">
+                    <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading active boards under test...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Completed Test Reports -->
         <section id="tab-history" class="tab-content">
             <div class="card">
                 <div class="card-title">
-                    <span>Recent Test Logs</span>
+                    <span>Completed Test Reports</span>
                     <span id="logs-count-badge" class="badge-count">0 logs</span>
                 </div>
                 <div id="reports-list-container">
@@ -129,7 +146,65 @@
         </section>
     </main>
 
-    <!-- JSON Metrics View Modal -->
+    <!-- Modal 1: Update Outcome for Board Under Test -->
+    <div class="modal-overlay" id="update-outcome-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div style="font-family: var(--font-head); font-weight: 700; font-size: 1.1rem;">Update Final Test Outcome</div>
+                <button class="close-btn" onclick="app.closeModal('update-outcome-modal')">&times;</button>
+            </div>
+            <form id="update-outcome-form" onsubmit="app.submitFinalOutcome(event)" style="padding: 1.25rem; overflow-y: auto;">
+                <div class="form-group">
+                    <label>Board Serial Number</label>
+                    <input type="text" id="modal_serial_display" class="input-mobile" readonly style="background: rgba(255,255,255,0.05); color: #38bdf8; font-weight: 700; font-family: monospace;">
+                </div>
+
+                <div class="form-group">
+                    <label for="modal_operator_id">Operator Staff *</label>
+                    <select id="modal_operator_id" class="input-mobile" required>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="modal_test_type">Test Type *</label>
+                    <select id="modal_test_type" class="input-mobile" required onchange="app.onModalTestTypeChange()">
+                        <option value="8_HOURS_ON_OFF" selected>8 Hours On/Off Test</option>
+                        <option value="SECO_BOARD_QA">Seco Board QA Test</option>
+                        <option value="DISPLAY_UNIT_QA">Display Unit QA Test</option>
+                        <option value="CUSTOM_QA">Custom QA Test</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="modal_final_status">Final Outcome *</label>
+                    <select id="modal_final_status" class="input-mobile" required>
+                        <option value="PASS" selected>PASSED 🟢</option>
+                        <option value="FAIL">REJECTED 🔴</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label for="modal_test_data_json" style="margin-bottom: 0;">Final Test Data Metrics (JSON) *</label>
+                        <button type="button" class="btn-small-action" onclick="app.loadModalTestTemplate()">Reset Template</button>
+                    </div>
+                    <textarea id="modal_test_data_json" class="input-mobile" style="height: 120px; padding: 0.75rem; font-family: monospace; font-size: 0.85rem;" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="modal_remarks">Closing Remarks / Observations</label>
+                    <input type="text" id="modal_remarks" class="input-mobile" placeholder="e.g. Burn-in completed with zero errors">
+                </div>
+
+                <button type="submit" class="btn-submit-giant" style="background: linear-gradient(135deg, #059669, #10b981);">
+                    <i class="fa-solid fa-circle-check"></i> SAVE FINAL OUTCOME & CLOSE TEST
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: JSON Metrics View Overlay -->
     <div class="modal-overlay" id="json-view-modal">
         <div class="modal-card">
             <div class="modal-header">
