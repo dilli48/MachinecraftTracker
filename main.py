@@ -486,3 +486,167 @@ def get_stage_matrix(
     }
 
 
+# ==========================================
+# Physical Boards & Testing Tracking Endpoints
+# ==========================================
+
+@app.post("/api/physical-boards", response_model=models.PhysicalBoardResponse, status_code=status.HTTP_201_CREATED, tags=["Testing Tracking"])
+def create_physical_board(
+    payload: models.PhysicalBoardCreate,
+    db: Session = Depends(get_db)
+):
+    existing = db.query(models.PhysicalBoard).filter(models.PhysicalBoard.serial_number == payload.serial_number.strip()).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Serial number '{payload.serial_number}' is already registered.")
+
+    board = db.query(models.Board).filter(models.Board.id == payload.product_id).first()
+    if not board:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Board product ID {payload.product_id} not found.")
+
+    phys_board = models.PhysicalBoard(
+        serial_number=payload.serial_number.strip(),
+        product_id=payload.product_id,
+        current_status=payload.current_status or "IN_TESTING"
+    )
+    db.add(phys_board)
+    db.commit()
+    db.refresh(phys_board)
+
+    return models.PhysicalBoardResponse(
+        serial_number=phys_board.serial_number,
+        product_id=phys_board.product_id,
+        product_name=board.name,
+        manufactured_date=phys_board.manufactured_date,
+        current_status=phys_board.current_status
+    )
+
+
+@app.get("/api/physical-boards", response_model=List[models.PhysicalBoardResponse], tags=["Testing Tracking"])
+def get_physical_boards(
+    product_id: Optional[int] = Query(None, description="Filter by board product ID"),
+    current_status: Optional[str] = Query(None, description="Filter by status e.g. IN_TESTING, PASSED, REJECTED"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.PhysicalBoard)
+    if product_id:
+        query = query.filter(models.PhysicalBoard.product_id == product_id)
+    if current_status:
+        query = query.filter(models.PhysicalBoard.current_status == current_status)
+
+    boards = query.order_by(models.PhysicalBoard.manufactured_date.desc()).all()
+    result = []
+    for b in boards:
+        result.append(models.PhysicalBoardResponse(
+            serial_number=b.serial_number,
+            product_id=b.product_id,
+            product_name=b.board.name if b.board else "Unknown Board",
+            manufactured_date=b.manufactured_date,
+            current_status=b.current_status
+        ))
+    return result
+
+
+@app.post("/api/testing/log-report", response_model=models.TestReportResponse, status_code=status.HTTP_201_CREATED, tags=["Testing Tracking"])
+def create_test_report(
+    payload: models.TestReportCreate,
+    db: Session = Depends(get_db)
+):
+    phys_board = db.query(models.PhysicalBoard).filter(models.PhysicalBoard.serial_number == payload.board_serial_number.strip()).first()
+    if not phys_board:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Physical board serial '{payload.board_serial_number}' not found.")
+
+    operator = db.query(models.Operator).filter(models.Operator.id == payload.operator_id).first()
+    if not operator:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Operator ID {payload.operator_id} not found.")
+
+    overall_status = payload.overall_status.upper().strip()
+    if overall_status not in ["PASS", "FAIL"]:
+        overall_status = "PASS"
+
+    report = models.TestReport(
+        board_serial_number=payload.board_serial_number.strip(),
+        test_type=payload.test_type.strip(),
+        operator_id=payload.operator_id,
+        overall_status=overall_status,
+        test_data=payload.test_data,
+        remarks=payload.remarks
+    )
+
+    if overall_status == "PASS":
+        phys_board.current_status = "PASSED"
+    elif overall_status == "FAIL":
+        phys_board.current_status = "REJECTED"
+
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+
+    return models.TestReportResponse(
+        id=report.id,
+        board_serial_number=report.board_serial_number,
+        product_name=phys_board.board.name if phys_board and phys_board.board else "Unknown Board",
+        test_type=report.test_type,
+        operator_id=report.operator_id,
+        operator_name=operator.name,
+        test_timestamp=report.test_timestamp,
+        overall_status=report.overall_status,
+        test_data=report.test_data,
+        remarks=report.remarks
+    )
+
+
+@app.get("/api/testing/reports", response_model=List[models.TestReportResponse], tags=["Testing Tracking"])
+def get_test_reports(
+    serial_number: Optional[str] = Query(None, description="Filter by board serial number"),
+    test_type: Optional[str] = Query(None, description="Filter by test type"),
+    overall_status: Optional[str] = Query(None, description="Filter by PASS or FAIL"),
+    log_date: Optional[str] = Query(None, alias="date", description="Filter by YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.TestReport)
+    if serial_number:
+        query = query.filter(models.TestReport.board_serial_number == serial_number.strip())
+    if test_type:
+        query = query.filter(models.TestReport.test_type == test_type.strip())
+    if overall_status:
+        query = query.filter(models.TestReport.overall_status == overall_status.strip().upper())
+    if log_date:
+        try:
+            target_date = datetime.strptime(log_date.strip(), "%Y-%m-%d").date()
+            query = query.filter(func.date(models.TestReport.test_timestamp) == target_date)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date format. Expected YYYY-MM-DD.")
+
+    reports = query.order_by(models.TestReport.test_timestamp.desc()).all()
+    result = []
+    for r in reports:
+        result.append(models.TestReportResponse(
+            id=r.id,
+            board_serial_number=r.board_serial_number,
+            product_name=r.physical_board.board.name if r.physical_board and r.physical_board.board else "Unknown Board",
+            test_type=r.test_type,
+            operator_id=r.operator_id,
+            operator_name=r.operator.name if r.operator else "Unknown Operator",
+            test_timestamp=r.test_timestamp,
+            overall_status=r.overall_status,
+            test_data=r.test_data,
+            remarks=r.remarks
+        ))
+    return result
+
+
+@app.delete("/api/testing/reports/{report_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Testing Tracking"])
+def delete_test_report(
+    report_id: int,
+    db: Session = Depends(get_db)
+):
+    report = db.query(models.TestReport).filter(models.TestReport.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Test report #{report_id} not found.")
+
+    db.delete(report)
+    db.commit()
+    return None
+
+
+

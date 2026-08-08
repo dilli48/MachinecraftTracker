@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional, List, Any
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, func, Index
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
+
 from pydantic import BaseModel, Field, ConfigDict
 from database import Base
 
@@ -60,6 +62,40 @@ class ProductionLog(Base):
     # Relationships
     operator = relationship("Operator", lazy="joined")
     board = relationship("Board", lazy="joined")
+
+
+class PhysicalBoard(Base):
+    __tablename__ = "physical_boards"
+
+    serial_number = Column(String(100), primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("boards.id", ondelete="CASCADE"), nullable=False)
+    manufactured_date = Column(DateTime(timezone=True), server_default=func.now())
+    current_status = Column(String(50), nullable=False, default="IN_TESTING")
+
+    # Relationships
+    board = relationship("Board", lazy="joined")
+
+
+class TestReport(Base):
+    __tablename__ = "test_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    board_serial_number = Column(String(100), ForeignKey("physical_boards.serial_number", ondelete="CASCADE"), nullable=False)
+    test_type = Column(String(100), nullable=False, index=True)
+    operator_id = Column(Integer, ForeignKey("operators.id", ondelete="SET NULL"), nullable=True)
+    test_timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    overall_status = Column(String(20), nullable=False, default="PASS")
+    test_data = Column(JSONB, nullable=False)
+    remarks = Column(Text, nullable=True)
+
+    # Relationships
+    physical_board = relationship("PhysicalBoard", lazy="joined")
+    operator = relationship("Operator", lazy="joined")
+
+    __table_args__ = (
+        Index("idx_test_data", "test_data", postgresql_using="gin"),
+    )
+
 
 
 # ==========================================
@@ -156,3 +192,44 @@ class ProductionLogResponse(BaseModel):
     quantity: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# Physical Board Schemas
+class PhysicalBoardCreate(BaseModel):
+    serial_number: str = Field(..., description="Unique physical board serial number")
+    product_id: int = Field(..., description="Board product model ID")
+    current_status: Optional[str] = Field("IN_TESTING", description="Current board status e.g. IN_TESTING, PASSED, REJECTED")
+
+class PhysicalBoardResponse(BaseModel):
+    serial_number: str
+    product_id: int
+    product_name: Optional[str] = None
+    manufactured_date: Optional[datetime] = None
+    current_status: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Test Report Schemas
+class TestReportCreate(BaseModel):
+    board_serial_number: str = Field(..., description="Physical board serial number")
+    test_type: str = Field(..., description="Test type name e.g. 8_HOURS_ON_OFF, SECO_BOARD_QA, DISPLAY_UNIT_QA")
+    operator_id: int = Field(..., description="ID of staff operator conducting the test")
+    overall_status: str = Field("PASS", description="Overall test outcome: PASS or FAIL")
+    test_data: dict = Field(..., description="JSON test measurements and metrics dictionary")
+    remarks: Optional[str] = Field(None, description="Optional technician remarks or observations")
+
+class TestReportResponse(BaseModel):
+    id: int
+    board_serial_number: str
+    product_name: Optional[str] = None
+    test_type: str
+    operator_id: Optional[int] = None
+    operator_name: Optional[str] = None
+    test_timestamp: Optional[datetime] = None
+    overall_status: str
+    test_data: dict
+    remarks: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+

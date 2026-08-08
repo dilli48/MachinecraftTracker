@@ -3,6 +3,8 @@ const app = {
     operators: [],
     boards: [],
     stageLogs: [],
+    physicalBoards: [],
+    testReports: [],
     searchQuery: '',
     editingPartNumber: null,
 
@@ -15,7 +17,9 @@ const app = {
             this.fetchComponents(),
             this.fetchOperators(),
             this.fetchBoards(),
-            this.fetchStageLogs()
+            this.fetchStageLogs(),
+            this.fetchPhysicalBoards(),
+            this.fetchTestReports()
         ]);
         this.renderStats();
         this.populateMatrixLineDropdown();
@@ -24,7 +28,10 @@ const app = {
         this.renderInventory();
         this.renderOperatorsList();
         this.renderBoardsList();
+        this.renderPhysicalBoards();
+        this.renderTestReports();
     },
+
 
     populateMatrixLineDropdown() {
         const select = document.getElementById('filter_matrix_line');
@@ -326,9 +333,15 @@ const app = {
         if (tabName === 'stage-logs') {
             document.getElementById('stage-actions').style.display = 'flex';
             document.getElementById('inventory-actions').style.display = 'none';
+            if (document.getElementById('testing-actions')) document.getElementById('testing-actions').style.display = 'none';
         } else if (tabName === 'inventory') {
             document.getElementById('stage-actions').style.display = 'none';
             document.getElementById('inventory-actions').style.display = 'flex';
+            if (document.getElementById('testing-actions')) document.getElementById('testing-actions').style.display = 'none';
+        } else if (tabName === 'testing') {
+            document.getElementById('stage-actions').style.display = 'none';
+            document.getElementById('inventory-actions').style.display = 'none';
+            if (document.getElementById('testing-actions')) document.getElementById('testing-actions').style.display = 'flex';
         }
     },
 
@@ -340,12 +353,14 @@ const app = {
         this.openModal('add-component-modal');
     },
 
-
     handleSearch() {
         this.searchQuery = document.getElementById('search-input').value;
         this.renderStageLogs();
         this.renderInventory();
+        this.renderPhysicalBoards();
+        this.renderTestReports();
     },
+
 
     openModal(modalId) {
         document.getElementById(modalId).classList.add('active');
@@ -546,7 +561,306 @@ const app = {
         }
     },
 
+    async fetchPhysicalBoards() {
+        try {
+            const res = await fetch('/api/physical-boards');
+            if (res.ok) this.physicalBoards = await res.json();
+        } catch (e) {
+            this.showToast('Error fetching physical boards: ' + e.message, 'error');
+        }
+    },
+
+    renderPhysicalBoards() {
+        const tbody = document.getElementById('physical-boards-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const statusFilter = document.getElementById('filter_board_status') ? document.getElementById('filter_board_status').value : '';
+
+        let filtered = this.physicalBoards.filter(b => {
+            if (statusFilter && b.current_status !== statusFilter) return false;
+            if (this.searchQuery) {
+                const q = this.searchQuery.toLowerCase();
+                return b.serial_number.toLowerCase().includes(q) || (b.product_name && b.product_name.toLowerCase().includes(q));
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No registered physical boards match status/search filter.</td></tr>`;
+            return;
+        }
+
+        filtered.forEach(b => {
+            const dateStr = b.manufactured_date ? new Date(b.manufactured_date).toLocaleString() : '-';
+            let badgeClass = 'badge-info';
+            if (b.current_status === 'PASSED') badgeClass = 'badge-success';
+            if (b.current_status === 'REJECTED') badgeClass = 'badge-danger';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-family: monospace; font-weight: 700; color: #38bdf8;">${this.escapeHtml(b.serial_number)}</td>
+                <td style="font-weight: 600; color: #ffffff;">${this.escapeHtml(b.product_name)}</td>
+                <td style="font-size: 0.85rem; color: var(--text-muted);">${dateStr}</td>
+                <td><span class="badge ${badgeClass}">${this.escapeHtml(b.current_status)}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    },
+
+    async fetchTestReports(dateStr = null) {
+        try {
+            const testType = document.getElementById('filter_test_type') ? document.getElementById('filter_test_type').value : '';
+            const status = document.getElementById('filter_test_status') ? document.getElementById('filter_test_status').value : '';
+            const dateVal = dateStr || (document.getElementById('filter_test_date') ? document.getElementById('filter_test_date').value : '');
+
+            const params = new URLSearchParams();
+            if (testType) params.append('test_type', testType);
+            if (status) params.append('overall_status', status);
+            if (dateVal) params.append('date', dateVal);
+
+            const url = params.toString() ? `/api/testing/reports?${params.toString()}` : '/api/testing/reports';
+            const res = await fetch(url);
+            if (res.ok) this.testReports = await res.json();
+        } catch (e) {
+            this.showToast('Error fetching test reports: ' + e.message, 'error');
+        }
+    },
+
+    async handleTestReportFilterChange() {
+        await this.fetchTestReports();
+        this.renderTestReports();
+    },
+
+    async clearTestReportFilters() {
+        if (document.getElementById('filter_test_type')) document.getElementById('filter_test_type').value = '';
+        if (document.getElementById('filter_test_status')) document.getElementById('filter_test_status').value = '';
+        if (document.getElementById('filter_test_date')) document.getElementById('filter_test_date').value = '';
+        await this.fetchTestReports();
+        this.renderTestReports();
+    },
+
+    renderTestReports() {
+        const tbody = document.getElementById('test-reports-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        let filtered = this.testReports.filter(r => {
+            if (this.searchQuery) {
+                const q = this.searchQuery.toLowerCase();
+                return r.board_serial_number.toLowerCase().includes(q) ||
+                       (r.product_name && r.product_name.toLowerCase().includes(q)) ||
+                       (r.test_type && r.test_type.toLowerCase().includes(q)) ||
+                       (r.operator_name && r.operator_name.toLowerCase().includes(q));
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">No test reports recorded. Click "Log Test Report" to add QA test metrics.</td></tr>`;
+            return;
+        }
+
+        filtered.forEach(r => {
+            const dateStr = r.test_timestamp ? new Date(r.test_timestamp).toLocaleString() : '-';
+            const isPass = r.overall_status === 'PASS';
+            const statusBadge = isPass
+                ? `<span class="badge badge-success" style="font-weight: 700;">PASS 🟢</span>`
+                : `<span class="badge badge-danger" style="font-weight: 700;">FAIL 🔴</span>`;
+
+            const jsonSnippet = JSON.stringify(r.test_data || {});
+            const shortSnippet = jsonSnippet.length > 35 ? jsonSnippet.substring(0, 35) + '...' : jsonSnippet;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight: 700; color: var(--text-dim);">#${r.id}</td>
+                <td style="font-family: monospace; font-weight: 700; color: #38bdf8;">${this.escapeHtml(r.board_serial_number)}</td>
+                <td style="font-weight: 600; color: #ffffff;">${this.escapeHtml(r.product_name)}</td>
+                <td><span class="badge badge-info">${this.escapeHtml(r.test_type)}</span></td>
+                <td><i class="fa-solid fa-user" style="font-size: 0.78rem; color: var(--text-dim); margin-right: 0.3rem;"></i> ${this.escapeHtml(r.operator_name)}</td>
+                <td style="font-size: 0.82rem; color: var(--text-muted);">${dateStr}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button class="btn btn-secondary" style="padding: 0.25rem 0.55rem; font-size: 0.78rem; font-family: monospace;" onclick="app.viewTestDataDetails(${r.id})">
+                        <i class="fa-solid fa-code"></i> ${this.escapeHtml(shortSnippet)}
+                    </button>
+                </td>
+                <td style="font-size: 0.83rem; color: var(--text-muted); max-width: 150px;">${this.escapeHtml(r.remarks || '-')}</td>
+                <td style="text-align: right;">
+                    <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.78rem; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3);" onclick="app.deleteTestReport(${r.id})">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    },
+
+    openPhysicalBoardModal() {
+        const select = document.getElementById('phys_product_id');
+        select.innerHTML = this.boards.map(b => `<option value="${b.id}">${this.escapeHtml(b.name)} (${b.production_line_category || 'JACQUARD'})</option>`).join('');
+        document.getElementById('physical-board-form').reset();
+        this.openModal('physical-board-modal');
+    },
+
+    async submitPhysicalBoard(e) {
+        e.preventDefault();
+        const payload = {
+            serial_number: document.getElementById('phys_serial_number').value.trim(),
+            product_id: parseInt(document.getElementById('phys_product_id').value),
+            current_status: document.getElementById('phys_current_status').value
+        };
+
+        try {
+            const res = await fetch('/api/physical-boards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                this.showToast(`Board serial '${payload.serial_number}' registered!`, 'success');
+                this.closeModal('physical-board-modal');
+                await this.refreshData();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Failed to register board serial', 'error');
+            }
+        } catch (err) {
+            this.showToast('Error: ' + err.message, 'error');
+        }
+    },
+
+    openTestReportModal() {
+        const serialSelect = document.getElementById('report_board_serial');
+        if (this.physicalBoards.length === 0) {
+            serialSelect.innerHTML = '<option value="" disabled selected>No physical boards registered yet</option>';
+        } else {
+            serialSelect.innerHTML = this.physicalBoards.map(b => `<option value="${this.escapeHtml(b.serial_number)}">${this.escapeHtml(b.serial_number)} - ${this.escapeHtml(b.product_name)} (${b.current_status})</option>`).join('');
+        }
+
+        const opSelect = document.getElementById('report_operator_id');
+        const activeOps = this.operators.filter(o => o.is_active);
+        opSelect.innerHTML = activeOps.map(o => `<option value="${o.id}">${this.escapeHtml(o.name)}</option>`).join('');
+
+        document.getElementById('test-report-form').reset();
+        this.onTestTypeTemplateChange();
+        this.openModal('test-report-modal');
+    },
+
+    onTestTypeTemplateChange() {
+        this.loadTestTemplate();
+    },
+
+    loadTestTemplate() {
+        const type = document.getElementById('report_test_type').value;
+        const textarea = document.getElementById('report_test_data');
+        let template = {};
+
+        if (type === '8_HOURS_ON_OFF') {
+            template = {
+                voltage_v: 230,
+                temperature_celsius: 42.5,
+                burn_in_hours: 8,
+                cycles_completed: 480,
+                power_draw_watts: 18.4,
+                fan_speed_rpm: 2400
+            };
+        } else if (type === 'SECO_BOARD_QA') {
+            template = {
+                firmware_version: "v2.1.4",
+                can_bus_communication: "OK",
+                spi_flash_test: "PASS",
+                voltage_3v3: 3.31,
+                voltage_5v: 5.02,
+                sensor_channels: [1, 2, 3, 4]
+            };
+        } else if (type === 'DISPLAY_UNIT_QA') {
+            template = {
+                display_resolution: "1024x600",
+                touch_screen_calibration: "PASSED",
+                backlight_brightness_nits: 450,
+                pixel_defect_count: 0,
+                hmi_boot_time_sec: 4.2
+            };
+        } else {
+            template = {
+                custom_metric_1: "OK",
+                custom_value_2: 100
+            };
+        }
+
+        textarea.value = JSON.stringify(template, null, 4);
+    },
+
+    async submitTestReport(e) {
+        e.preventDefault();
+        const jsonText = document.getElementById('report_test_data').value;
+        let testDataObj = {};
+        try {
+            testDataObj = JSON.parse(jsonText);
+        } catch (err) {
+            this.showToast('Invalid JSON format in Test Data Metrics field!', 'error');
+            return;
+        }
+
+        const payload = {
+            board_serial_number: document.getElementById('report_board_serial').value,
+            operator_id: parseInt(document.getElementById('report_operator_id').value),
+            test_type: document.getElementById('report_test_type').value,
+            overall_status: document.getElementById('report_overall_status').value,
+            test_data: testDataObj,
+            remarks: document.getElementById('report_remarks').value || null
+        };
+
+        try {
+            const res = await fetch('/api/testing/log-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                this.showToast(`Test report for ${payload.board_serial_number} saved successfully!`, 'success');
+                this.closeModal('test-report-modal');
+                await this.refreshData();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Failed to save test report', 'error');
+            }
+        } catch (err) {
+            this.showToast('Error: ' + err.message, 'error');
+        }
+    },
+
+    async deleteTestReport(reportId) {
+        if (!confirm(`Are you sure you want to delete test report #${reportId}?`)) return;
+
+        try {
+            const res = await fetch(`/api/testing/reports/${reportId}`, { method: 'DELETE' });
+            if (res.ok || res.status === 204) {
+                this.showToast(`Test report #${reportId} deleted!`, 'success');
+                await this.refreshData();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Failed to delete test report', 'error');
+            }
+        } catch (e) {
+            this.showToast('Error: ' + e.message, 'error');
+        }
+    },
+
+    viewTestDataDetails(reportId) {
+        const report = this.testReports.find(r => r.id === reportId);
+        if (!report) return;
+
+        document.getElementById('json-modal-title').innerText = `Report #${report.id} - ${report.test_type} (${report.board_serial_number})`;
+        document.getElementById('json-modal-content').innerText = JSON.stringify(report.test_data, null, 4);
+        this.openModal('view-json-modal');
+    },
+
     showToast(message, type = 'success') {
+
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;

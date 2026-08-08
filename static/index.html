@@ -89,12 +89,15 @@
                     <button class="tab-btn" id="tab-inventory" onclick="app.switchTab('inventory')">
                         <i class="fa-solid fa-boxes-stacked"></i> Components Inventory
                     </button>
+                    <button class="tab-btn" id="tab-testing" onclick="app.switchTab('testing')">
+                        <i class="fa-solid fa-vial-circle-check"></i> Testing Tracking
+                    </button>
                 </div>
 
                 <div class="actions-container">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="search-input" placeholder="Search logs or components..." oninput="app.handleSearch()">
+                        <input type="text" id="search-input" placeholder="Search logs, components, or test reports..." oninput="app.handleSearch()">
                     </div>
 
                     <!-- Stage Tracking Actions -->
@@ -118,7 +121,19 @@
                             <i class="fa-solid fa-plus"></i> Add Component
                         </button>
                     </div>
+
+                    <!-- Testing Tracking Actions -->
+                    <div id="testing-actions" style="display: none; gap: 0.5rem; align-items: center;">
+                        <button class="btn btn-secondary" onclick="app.openPhysicalBoardModal()">
+                            <i class="fa-solid fa-barcode"></i> Register Serial No.
+                        </button>
+
+                        <button class="btn btn-primary" onclick="app.openTestReportModal()">
+                            <i class="fa-solid fa-file-signature"></i> Log Test Report
+                        </button>
+                    </div>
                 </div>
+
 
             </div>
 
@@ -242,6 +257,111 @@
                     </div>
                 </div>
             </section>
+
+            <!-- View 3: Testing Tracking -->
+            <section id="testing-view" class="view-section">
+                <!-- Physical Boards Serial Summary Card -->
+                <div class="table-card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-family: var(--font-head); font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">
+                                <i class="fa-solid fa-microchip" style="color: var(--primary); margin-right: 0.5rem;"></i> Physical Board Serials
+                            </h3>
+                            <span style="font-size: 0.82rem; color: var(--text-dim);">Individual board units registered for testing</span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <label for="filter_board_status" style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); white-space: nowrap;">Status Filter:</label>
+                            <select id="filter_board_status" class="form-control" style="min-width: 180px; padding: 0.45rem 0.85rem;" onchange="app.renderPhysicalBoards()">
+                                <option value="">All Statuses</option>
+                                <option value="IN_TESTING">IN_TESTING</option>
+                                <option value="PASSED">PASSED</option>
+                                <option value="REJECTED">REJECTED</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper" style="max-height: 220px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Serial Number</th>
+                                    <th>Product Board Model</th>
+                                    <th>Registration Date</th>
+                                    <th>Current Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="physical-boards-tbody">
+                                <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading registered physical boards...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Unified Test Reports Table Card -->
+                <div class="table-card" style="padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-family: var(--font-head); font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">
+                                <i class="fa-solid fa-file-waveform" style="color: var(--primary); margin-right: 0.5rem;"></i> Unified Test Reports Log
+                            </h3>
+                            <span style="font-size: 0.82rem; color: var(--text-dim);">Comprehensive QA reports with JSON test measurements</span>
+                        </div>
+
+                        <!-- Test Report Filter Controls -->
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <label for="filter_test_type" style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); white-space: nowrap;">Test Type:</label>
+                            <select id="filter_test_type" class="form-control" style="padding: 0.4rem 0.75rem; width: auto;" onchange="app.handleTestReportFilterChange()">
+                                <option value="">All Test Types</option>
+                                <option value="8_HOURS_ON_OFF">8 Hours On/Off Test</option>
+                                <option value="SECO_BOARD_QA">Seco Board QA</option>
+                                <option value="DISPLAY_UNIT_QA">Display Unit QA</option>
+                            </select>
+
+                            <label for="filter_test_status" style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); white-space: nowrap;">Outcome:</label>
+                            <select id="filter_test_status" class="form-control" style="padding: 0.4rem 0.75rem; width: auto;" onchange="app.handleTestReportFilterChange()">
+                                <option value="">All Outcomes</option>
+                                <option value="PASS">PASS</option>
+                                <option value="FAIL">FAIL</option>
+                            </select>
+
+                            <label for="filter_test_date" style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); white-space: nowrap;">Date:</label>
+                            <input type="date" id="filter_test_date" class="form-control" style="padding: 0.4rem 0.75rem; width: auto;" onchange="app.handleTestReportFilterChange()">
+                            
+                            <button class="btn btn-secondary" style="padding: 0.4rem 0.75rem; font-size: 0.82rem;" onclick="app.clearTestReportFilters()">
+                                <i class="fa-solid fa-xmark"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Report ID</th>
+                                    <th>Serial Number</th>
+                                    <th>Product Board</th>
+                                    <th>Test Type</th>
+                                    <th>Operator</th>
+                                    <th>Timestamp</th>
+                                    <th>Outcome</th>
+                                    <th>Test Data Metrics</th>
+                                    <th>Remarks</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="test-reports-tbody">
+                                <tr>
+                                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                        Loading test reports...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -420,7 +540,126 @@
         </div>
     </div>
 
+    <!-- Modal 5: Register Physical Board -->
+    <div class="modal-overlay" id="physical-board-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Register Physical Board Serial</div>
+                <button class="close-btn" onclick="app.closeModal('physical-board-modal')">&times;</button>
+            </div>
+            <form id="physical-board-form" onsubmit="app.submitPhysicalBoard(event)">
+                <div class="form-group">
+                    <label class="form-label" for="phys_serial_number">Board Serial Number *</label>
+                    <input type="text" id="phys_serial_number" class="form-control" required placeholder="e.g. SN-JAC-2026-001">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phys_product_id">Product Board Model *</label>
+                    <select id="phys_product_id" class="form-control" required>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phys_current_status">Initial Status *</label>
+                    <select id="phys_current_status" class="form-control" required>
+                        <option value="IN_TESTING" selected>IN_TESTING</option>
+                        <option value="PASSED">PASSED</option>
+                        <option value="REJECTED">REJECTED</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('physical-board-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Register Serial</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 6: Log Test Report -->
+    <div class="modal-overlay" id="test-report-modal">
+        <div class="modal" style="max-width: 650px;">
+            <div class="modal-header">
+                <div class="modal-title">Log Test Report (JSON Metrics)</div>
+                <button class="close-btn" onclick="app.closeModal('test-report-modal')">&times;</button>
+            </div>
+            <form id="test-report-form" onsubmit="app.submitTestReport(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="report_board_serial">Board Serial Number *</label>
+                        <select id="report_board_serial" class="form-control" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="report_operator_id">Operator Staff *</label>
+                        <select id="report_operator_id" class="form-control" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="report_test_type">Test Type *</label>
+                        <select id="report_test_type" class="form-control" required onchange="app.onTestTypeTemplateChange()">
+                            <option value="8_HOURS_ON_OFF">8 Hours On/Off Test</option>
+                            <option value="SECO_BOARD_QA">Seco Board QA Test</option>
+                            <option value="DISPLAY_UNIT_QA">Display Unit QA Test</option>
+                            <option value="CUSTOM_QA">Custom QA Test</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="report_overall_status">Overall Outcome *</label>
+                        <select id="report_overall_status" class="form-control" required>
+                            <option value="PASS" selected>PASS 🟢</option>
+                            <option value="FAIL">FAIL 🔴</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label class="form-label" for="report_test_data" style="margin-bottom: 0;">Test Data Metrics (JSON Format) *</label>
+                        <button type="button" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="app.loadTestTemplate()">
+                            Load Template JSON
+                        </button>
+                    </div>
+                    <textarea id="report_test_data" class="form-control" rows="6" style="font-family: monospace; font-size: 0.85rem;" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="report_remarks">Remarks / Technical Observations</label>
+                    <textarea id="report_remarks" class="form-control" rows="2" placeholder="Optional notes..."></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('test-report-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-file-signature"></i> Save Test Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 7: View JSON Test Data Detail -->
+    <div class="modal-overlay" id="view-json-modal">
+        <div class="modal" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title" id="json-modal-title">Test Data JSON Metrics</div>
+                <button class="close-btn" onclick="app.closeModal('view-json-modal')">&times;</button>
+            </div>
+            <pre id="json-modal-content" style="background: rgba(15, 23, 42, 0.8); color: #38bdf8; padding: 1rem; border-radius: 8px; font-family: monospace; overflow-x: auto; max-height: 350px; border: 1px solid rgba(255,255,255,0.1);"></pre>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="app.closeModal('view-json-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toast-container"></div>
     <script src="/static/app.js"></script>
 </body>
 </html>
+
