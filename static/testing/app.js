@@ -79,6 +79,46 @@ const app = {
         }
     },
 
+    renderUnderTestList() {
+        const container = document.getElementById('undertest-list-container');
+        const badge = document.getElementById('undertest-badge');
+        const pill = document.getElementById('undertest-count-pill');
+        
+        const countStr = `${this.underTestList.length}`;
+        if (badge) badge.innerText = `${countStr} Active`;
+        if (pill) pill.innerText = countStr;
+
+        if (!container) return;
+
+        if (this.underTestList.length === 0) {
+            container.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">No boards currently under test.</div>`;
+            return;
+        }
+
+        container.innerHTML = this.underTestList.map(b => {
+            const dateStr = new Date(b.manufactured_date).toLocaleString('en-IN', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            return `
+                <div class="report-item">
+                    <div class="report-header">
+                        <div class="serial-badge"><i class="fa-solid fa-microchip" style="color: var(--warning); margin-right: 4px;"></i> ${this.escapeHtml(b.serial_number)}</div>
+                        <span class="status-tag status-testing">IN-TESTING 🟡</span>
+                    </div>
+                    <div class="report-meta">
+                        <div><strong>Board Model:</strong> ${this.escapeHtml(b.product_name)}</div>
+                        <div><strong>Start / Log Date:</strong> ${dateStr}</div>
+                    </div>
+                    <button class="btn-update-outcome" onclick="app.openUpdateOutcomeModal('${this.escapeHtml(b.serial_number)}', '${this.escapeHtml(b.product_name)}')">
+                        <i class="fa-solid fa-pen-to-square"></i> UPDATE OUTCOME (PASS / REJECT)
+                    </button>
+                </div>
+            `;
+        }).join('');
+    },
+
+
     async refreshData() {
         await Promise.all([
             this.fetchOperators(),
