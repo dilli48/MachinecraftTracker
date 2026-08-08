@@ -551,9 +551,26 @@ def create_test_report(
     payload: models.TestReportCreate,
     db: Session = Depends(get_db)
 ):
-    phys_board = db.query(models.PhysicalBoard).filter(models.PhysicalBoard.serial_number == payload.board_serial_number.strip()).first()
+    serial_str = payload.board_serial_number.strip()
+    if not serial_str:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Board serial number is required.")
+
+    phys_board = db.query(models.PhysicalBoard).filter(models.PhysicalBoard.serial_number == serial_str).first()
     if not phys_board:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Physical board serial '{payload.board_serial_number}' not found.")
+        if not payload.product_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Serial number '{serial_str}' is not registered yet. Please select a product board.")
+        
+        board_model = db.query(models.Board).filter(models.Board.id == payload.product_id).first()
+        if not board_model:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Board product ID {payload.product_id} not found.")
+
+        phys_board = models.PhysicalBoard(
+            serial_number=serial_str,
+            product_id=payload.product_id,
+            current_status="IN_TESTING"
+        )
+        db.add(phys_board)
+        db.flush()
 
     operator = db.query(models.Operator).filter(models.Operator.id == payload.operator_id).first()
     if not operator:
@@ -562,6 +579,7 @@ def create_test_report(
     overall_status = payload.overall_status.upper().strip()
     if overall_status not in ["PASS", "FAIL"]:
         overall_status = "PASS"
+
 
     report = models.TestReport(
         board_serial_number=payload.board_serial_number.strip(),

@@ -732,20 +732,34 @@ const app = {
     },
 
     openTestReportModal() {
-        const serialSelect = document.getElementById('report_board_serial');
-        if (this.physicalBoards.length === 0) {
-            serialSelect.innerHTML = '<option value="" disabled selected>No physical boards registered yet</option>';
-        } else {
-            serialSelect.innerHTML = this.physicalBoards.map(b => `<option value="${this.escapeHtml(b.serial_number)}">${this.escapeHtml(b.serial_number)} - ${this.escapeHtml(b.product_name)} (${b.current_status})</option>`).join('');
-        }
+        const lineSelect = document.getElementById('report_production_line');
+        const lines = Array.from(new Set(this.boards.map(b => b.production_line_category || 'MACHINECRAFT JACQUARD')));
+
+        lineSelect.innerHTML = lines.map(l => `<option value="${this.escapeHtml(l)}">${this.escapeHtml(l)}</option>`).join('');
+
+        this.onReportProductionLineChange();
 
         const opSelect = document.getElementById('report_operator_id');
         const activeOps = this.operators.filter(o => o.is_active);
         opSelect.innerHTML = activeOps.map(o => `<option value="${o.id}">${this.escapeHtml(o.name)}</option>`).join('');
 
-        document.getElementById('test-report-form').reset();
+        document.getElementById('report_board_serial').value = '';
+        if (document.getElementById('report_remarks')) document.getElementById('report_remarks').value = '';
         this.onTestTypeTemplateChange();
         this.openModal('test-report-modal');
+    },
+
+    onReportProductionLineChange() {
+        const selectedLine = document.getElementById('report_production_line').value;
+        const boardSelect = document.getElementById('report_product_id');
+
+        const filteredBoards = this.boards.filter(b => (b.production_line_category || 'MACHINECRAFT JACQUARD') === selectedLine);
+
+        if (filteredBoards.length === 0) {
+            boardSelect.innerHTML = '<option value="" disabled selected>No boards in this production line</option>';
+        } else {
+            boardSelect.innerHTML = filteredBoards.map(b => `<option value="${b.id}">${this.escapeHtml(b.name)}</option>`).join('');
+        }
     },
 
     onTestTypeTemplateChange() {
@@ -804,8 +818,15 @@ const app = {
             return;
         }
 
+        const serialInput = document.getElementById('report_board_serial').value.trim();
+        if (!serialInput) {
+            this.showToast('Please enter a Board Serial Number!', 'error');
+            return;
+        }
+
         const payload = {
-            board_serial_number: document.getElementById('report_board_serial').value,
+            board_serial_number: serialInput,
+            product_id: parseInt(document.getElementById('report_product_id').value),
             operator_id: parseInt(document.getElementById('report_operator_id').value),
             test_type: document.getElementById('report_test_type').value,
             overall_status: document.getElementById('report_overall_status').value,
@@ -832,6 +853,7 @@ const app = {
             this.showToast('Error: ' + err.message, 'error');
         }
     },
+
 
     async deleteTestReport(reportId) {
         if (!confirm(`Are you sure you want to delete test report #${reportId}?`)) return;

@@ -213,11 +213,13 @@ class PhysicalBoardResponse(BaseModel):
 # Test Report Schemas
 class TestReportCreate(BaseModel):
     board_serial_number: str = Field(..., description="Physical board serial number")
+    product_id: Optional[int] = Field(None, description="Product board model ID for auto-registration")
     test_type: str = Field(..., description="Test type name e.g. 8_HOURS_ON_OFF, SECO_BOARD_QA, DISPLAY_UNIT_QA")
     operator_id: int = Field(..., description="ID of staff operator conducting the test")
     overall_status: str = Field("PASS", description="Overall test outcome: PASS or FAIL")
     test_data: dict = Field(..., description="JSON test measurements and metrics dictionary")
     remarks: Optional[str] = Field(None, description="Optional technician remarks or observations")
+
 
 class TestReportResponse(BaseModel):
     id: int
