@@ -197,8 +197,8 @@ const app = {
         const board_serial_number = serialInput.value.trim();
         const test_type = document.getElementById('test_type').value;
         const overall_status = document.getElementById('test_overall_status').value;
-        const jsonText = document.getElementById('test_data_json').value;
         const remarks = document.getElementById('test_remarks').value.trim() || null;
+
 
         if (!operator_id || !product_id || !board_serial_number) {
             this.showToast('Please select Operator, Board Model, and enter Serial Number', 'danger');
@@ -206,12 +206,18 @@ const app = {
         }
 
         let test_data = {};
-        try {
-            test_data = JSON.parse(jsonText);
-        } catch (err) {
-            this.showToast('Invalid JSON format in Test Data Metrics field!', 'danger');
-            return;
+        const jsonEl = document.getElementById('test_data_json');
+        if (jsonEl && jsonEl.value.trim()) {
+            try {
+                test_data = JSON.parse(jsonEl.value);
+            } catch (err) {
+                this.showToast('Invalid JSON format in Test Data Metrics field!', 'danger');
+                return;
+            }
+        } else {
+            test_data = this.getTemplateData(test_type);
         }
+
 
         const payload = {
             board_serial_number,
