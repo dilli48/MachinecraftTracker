@@ -106,13 +106,16 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-@app.get("/", tags=["Dashboard"])
+@app.get("/", tags=["Company Profile"])
 def read_root():
+    company_file = os.path.join(static_dir, "company.html")
+    if os.path.exists(company_file):
+        return FileResponse(company_file)
     index_file = os.path.join(static_dir, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return {
-        "message": "Welcome to Machinecraft Production & Inventory API",
+        "message": "Welcome to Machinecraft Industries API",
         "docs": "/docs",
         "health": "/health"
     }

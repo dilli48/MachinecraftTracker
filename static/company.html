@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machinecraft Industries | Advanced Jacquard & Electronics Manufacturing</title>
+    <meta name="description" content="Machinecraft Industries - Pioneers in Jacquard Electronics, Controller Boards, and High-Precision Industrial Automation Solutions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --primary: #0284c7;
+            --primary-glow: rgba(2, 132, 199, 0.35);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --success: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Animated Background Gradients */
+        .bg-glow-1 {
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            top: 300px;
+            right: -150px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Header Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            background: rgba(9, 13, 22, 0.8);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #fff;
+        }
+
+        .btn-portal {
+            background: linear-gradient(135deg, var(--primary), #0369a1);
+            color: #fff !important;
+            padding: 0.6rem 1.4rem;
+            border-radius: 8px;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-portal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(2, 132, 199, 0.15);
+            border: 1px solid rgba(2, 132, 199, 0.3);
+            color: #38bdf8;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 760px;
+            margin: 0 auto 2.5rem auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-lg {
+            padding: 0.9rem 2rem;
+            font-size: 1.05rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .btn-primary-lg {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+
+        .btn-primary-lg:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary-lg {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: #fff;
+        }
+
+        .btn-secondary-lg:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* Stats Bar */
+        .stats-grid {
+            max-width: 1000px;
+            margin: 4rem auto 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 14px;
+            backdrop-filter: blur(12px);
+        }
+
+        .stat-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* App Portals Section */
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .portals-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .portals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .portal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .portal-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(2, 132, 199, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .portal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .icon-tracker {
+            background: rgba(2, 132, 199, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(2, 132, 199, 0.3);
+        }
+
+        .icon-operator {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .icon-testing {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .portal-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 0.6rem;
+            color: #fff;
+        }
+
+        .portal-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .portal-link {
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #38bdf8;
+            transition: gap 0.2s ease;
+        }
+
+        .portal-link:hover {
+            gap: 0.8rem;
+        }
+
+        /* Features Section */
+        .features-section {
+            background: rgba(15, 23, 42, 0.4);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 5rem 2rem;
+        }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            padding: 1.5rem;
+        }
+
+        .feature-item i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-item h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-item p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.4rem;
+            }
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            footer {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <!-- Header Navigation -->
+    <header>
+        <a href="/" class="brand-logo">
+            <div class="brand-icon">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <span class="brand-name">Machinecraft Industries</span>
+        </a>
+
+        <nav>
+            <a href="#solutions">Solutions</a>
+            <a href="#portals">Internal Portals</a>
+            <a href="#about">About Us</a>
+            <a href="/tracker" class="btn-portal">
+                <i class="fa-solid fa-chart-line"></i> Machinecraft Tracker
+            </a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">
+            <i class="fa-solid fa-bolt"></i> Next-Gen Jacquard & Electronics Manufacturing
+        </div>
+        <h1>Engineering Precision Electronics & Jacquard Controllers</h1>
+        <p>Empowering Textile & Industrial Automation with High-Reliability Electronics, Embedded Jacquard Control Systems, and Live Production Traceability.</p>
+        
+        <div class="hero-actions">
+            <a href="/tracker" class="btn-lg btn-primary-lg">
+                <i class="fa-solid fa-gauge-high"></i> Access Tracker Admin
+            </a>
+            <a href="/operator" class="btn-lg btn-secondary-lg">
+                <i class="fa-solid fa-mobile-screen-button"></i> Operator PWA
+            </a>
+            <a href="/testing" class="btn-lg btn-secondary-lg">
+                <i class="fa-solid fa-vial-circle-check"></i> Testing PWA
+            </a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Quality Verified Boards</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3-Stage</div>
+                <div class="stat-label">Assembly & QA Movements</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8-Hour</div>
+                <div class="stat-label">Endurance Stress Testing</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Applications & Portals Section -->
+    <section id="portals" class="portals-container">
+        <div class="section-title">
+            <h2>Machinecraft Digital Systems</h2>
+            <p>Select a portal to manage inventory, log assembly movements, or run QA test reports.</p>
+        </div>
+
+        <div class="portals-grid">
+            <!-- Portal 1: Machinecraft Tracker -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon icon-tracker">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3>Machinecraft Tracker</h3>
+                    <p>Main Production Dashboard for inventory tracking, board serial lookup, user administration, and system analytics.</p>
+                </div>
+                <a href="/tracker" class="portal-link">
+                    Launch Admin Dashboard <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Portal 2: Operator Mobile PWA -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon icon-operator">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <h3>Operator Assembly Station</h3>
+                    <p>Mobile-optimized PWA for factory floor technicians to log SMD pick-and-place, assembly, and stage movements with QR scanning.</p>
+                </div>
+                <a href="/operator" class="portal-link" style="color: #818cf8;">
+                    Launch Operator PWA <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Portal 3: Testing & QA Mobile PWA -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon icon-testing">
+                        <i class="fa-solid fa-vial-circle-check"></i>
+                    </div>
+                    <h3>Quality Assurance & Testing</h3>
+                    <p>Technician portal for 8-Hour On/Off endurance testing, Seco Board QA, Display Unit inspection, and pass/fail outcome logging.</p>
+                </div>
+                <a href="/testing" class="portal-link" style="color: #34d399;">
+                    Launch QA Testing PWA <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Manufacturing Capabilities -->
+    <section id="solutions" class="features-section">
+        <div class="section-title">
+            <h2>Our Industrial Capabilities</h2>
+            <p>Custom PCB design, high-volume SMT manufacturing, and automated quality control.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-item">
+                <i class="fa-solid fa-microchip"></i>
+                <h4>Jacquard Controllers</h4>
+                <p>Advanced 1-Phase, 3-Phase, and ALL CL Card controller electronics built for extreme industrial durability.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-industry"></i>
+                <h4>High-Speed SMT Assembly</h4>
+                <p>Automated surface mount pick-and-place production lines with rigorous component inventory management.</p>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h4>Endurance QA Testing</h4>
+                <p>Comprehensive 8-hour cycling and automated voltage threshold validation for 100% board reliability.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div>
+            <strong>Machinecraft Industries</strong> &copy; 2026. All rights reserved.
+        </div>
+        <div>
+            Official Domain: <a href="https://mcinds.in" style="color: #38bdf8; text-decoration: none;">mcinds.in</a> | VPS Infrastructure Hosted
+        </div>
+    </footer>
+
+</body>
+</html>
