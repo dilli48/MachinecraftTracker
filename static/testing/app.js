@@ -120,7 +120,7 @@ const app = {
 
     async fetchOperators() {
         try {
-            const res = await fetch('/api/operators?active_only=true');
+            const res = await this.authFetch('/api/operators?active_only=true');
             if (res.ok) {
                 this.operatorsList = await res.json();
                 let optionsHtml = '<option value="" disabled selected>-- Select Your Name --</option>';
@@ -140,7 +140,7 @@ const app = {
 
     async fetchBoards() {
         try {
-            const res = await fetch('/api/boards');
+            const res = await this.authFetch('/api/boards');
             if (res.ok) {
                 this.boardsList = await res.json();
                 this.populateProductionLines();
@@ -152,7 +152,7 @@ const app = {
 
     async fetchReports() {
         try {
-            const res = await fetch('/api/testing/reports');
+            const res = await this.authFetch('/api/testing/reports');
             if (res.ok) {
                 this.reportsList = await res.json();
                 this.renderReportsList();
@@ -164,7 +164,7 @@ const app = {
 
     async fetchUnderTestBoards() {
         try {
-            const res = await fetch('/api/physical-boards?current_status=IN_TESTING');
+            const res = await this.authFetch('/api/physical-boards?current_status=IN_TESTING');
             if (res.ok) {
                 this.underTestList = await res.json();
                 this.renderUnderTestList();
@@ -795,7 +795,7 @@ const app = {
 
         let existingData = {};
         try {
-            const res = await fetch(`/api/testing/reports?serial_number=${encodeURIComponent(serialNumber)}`);
+            const res = await this.authFetch(`/api/testing/reports?serial_number=${encodeURIComponent(serialNumber)}`);
             if (res.ok) {
                 const reports = await res.json();
                 if (reports.length > 0) {
@@ -845,7 +845,7 @@ const app = {
         };
 
         try {
-            const res = await fetch('/api/testing/log-report', {
+            const res = await this.authFetch('/api/testing/log-report', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

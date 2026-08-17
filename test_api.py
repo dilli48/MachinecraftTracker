@@ -11,7 +11,7 @@ def test_api():
     print("Health response:", res.json())
 
     print("\n--- 2. Testing Authentication (/api/auth/login) ---")
-    login_res = requests.post(f"{BASE_URL}/api/auth/login", json={"username": "admin", "password": "admin123"})
+    login_res = requests.post(f"{BASE_URL}/api/auth/login", json={"username": "mctracker", "password": "2008batch"})
     assert login_res.status_code == 200, f"Login failed: {login_res.text}"
     token_data = login_res.json()
     token = token_data["access_token"]

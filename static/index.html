@@ -111,6 +111,10 @@
                             <i class="fa-solid fa-user-plus"></i> Staff Operators
                         </button>
 
+                        <button class="btn btn-secondary" id="btn-manage-users" style="display: none;" onclick="app.openModal('manage-users-modal')">
+                            <i class="fa-solid fa-users-gear"></i> User Accounts
+                        </button>
+
                         <button class="btn btn-secondary" onclick="app.openModal('manage-boards-modal')">
                             <i class="fa-solid fa-plus"></i> Board Products
                         </button>
@@ -691,7 +695,7 @@
             <form id="auth-login-form" onsubmit="app.handleLogin(event)" style="padding-top: 1rem;">
                 <div class="form-group">
                     <label class="form-label" for="login_username">Username *</label>
-                    <input type="text" id="login_username" class="form-control" required placeholder="Enter username (e.g. admin)">
+                    <input type="text" id="login_username" class="form-control" required placeholder="Enter username (e.g. mctracker)">
                 </div>
 
                 <div class="form-group">
@@ -703,13 +707,75 @@
                     <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
                         <input type="checkbox" id="login_remember" checked style="accent-color: var(--primary);"> Stay Logged In
                     </label>
-                    <span style="font-size: 0.78rem; color: var(--text-dim);">Default: admin / admin123</span>
+                    <span style="font-size: 0.78rem; color: var(--text-dim);">Default: mctracker / 2008batch</span>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.95rem; justify-content: center;">
                     <i class="fa-solid fa-right-to-bracket"></i> Sign In to Tracker
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal 9: Manage User Accounts (Admin Only) -->
+    <div class="modal-overlay" id="manage-users-modal">
+        <div class="modal" style="max-width: 620px;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-users-gear" style="color: var(--primary);"></i> User Account Management</div>
+                <button class="close-btn" onclick="app.closeModal('manage-users-modal')">&times;</button>
+            </div>
+            
+            <form onsubmit="app.addUser(event)" style="margin-bottom: 1.5rem; background: rgba(15,23,42,0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                <div style="font-weight: 600; margin-bottom: 0.75rem; color: var(--text-main); font-size: 0.95rem;">Add New User Account</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="new_user_username">Username *</label>
+                        <input type="text" id="new_user_username" class="form-control" required placeholder="e.g. operator1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="new_user_password">Password *</label>
+                        <input type="password" id="new_user_password" class="form-control" required placeholder="New account password">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="new_user_role">Role *</label>
+                        <select id="new_user_role" class="form-control">
+                            <option value="operator">Operator (Shop Floor)</option>
+                            <option value="tester">QA Tester (Testing Room)</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="new_user_email">Email (Optional)</label>
+                        <input type="email" id="new_user_email" class="form-control" placeholder="user@machinecraft.com">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 0.25rem;">
+                    <i class="fa-solid fa-user-plus"></i> Create User Account
+                </button>
+            </form>
+
+            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main); font-size: 0.95rem;">Registered Staff User Accounts</div>
+            <div class="table-wrapper" style="max-height: 200px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Email</th>
+                            <th>Created Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list-tbody">
+                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading user accounts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
+                <button type="button" class="btn btn-secondary" onclick="app.closeModal('manage-users-modal')">Close</button>
+            </div>
         </div>
     </div>
 

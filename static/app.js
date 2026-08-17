@@ -5,6 +5,7 @@ const app = {
     stageLogs: [],
     physicalBoards: [],
     testReports: [],
+    users: [],
     searchQuery: '',
     editingPartNumber: null,
     authToken: localStorage.getItem('machinecraft_auth_token') || '',
@@ -97,9 +98,13 @@ const app = {
     renderUserProfile() {
         const badge = document.getElementById('user-profile-badge');
         const nameSpan = document.getElementById('user-display-name');
+        const manageUsersBtn = document.getElementById('btn-manage-users');
         if (badge && nameSpan && this.authUser) {
             nameSpan.innerText = `${this.authUser.username} (${this.authUser.role.toUpperCase()})`;
             badge.style.display = 'flex';
+        }
+        if (manageUsersBtn) {
+            manageUsersBtn.style.display = (this.authUser && this.authUser.role === 'admin') ? 'inline-flex' : 'none';
         }
     },
 
@@ -121,7 +126,8 @@ const app = {
             this.fetchBoards(),
             this.fetchStageLogs(),
             this.fetchPhysicalBoards(),
-            this.fetchTestReports()
+            this.fetchTestReports(),
+            this.fetchUsers()
         ]);
         this.renderStats();
         this.populateMatrixLineDropdown();
@@ -132,8 +138,8 @@ const app = {
         this.renderBoardsList();
         this.renderPhysicalBoards();
         this.renderTestReports();
+        this.renderUsersList();
     },
-
 
     populateMatrixLineDropdown() {
         const select = document.getElementById('filter_matrix_line');
@@ -168,7 +174,7 @@ const app = {
         }
 
         try {
-            const res = await fetch(`/api/production/stage-matrix?production_line=${encodeURIComponent(selectedLine)}`);
+            const res = await this.authFetch(`/api/production/stage-matrix?production_line=${encodeURIComponent(selectedLine)}`);
             if (!res.ok) {
                 tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--danger); padding: 1.5rem;">Failed to load stage inventory matrix.</td></tr>';
                 return;
@@ -216,10 +222,9 @@ const app = {
         }
     },
 
-
     async fetchComponents() {
         try {
-            const res = await fetch('/api/components');
+            const res = await this.authFetch('/api/components');
             if (res.ok) this.components = await res.json();
         } catch (e) {
             this.showToast('Error fetching components: ' + e.message, 'error');
@@ -228,7 +233,7 @@ const app = {
 
     async fetchOperators() {
         try {
-            const res = await fetch('/api/operators?active_only=false');
+            const res = await this.authFetch('/api/operators?active_only=false');
             if (res.ok) this.operators = await res.json();
         } catch (e) {
             this.showToast('Error fetching operators: ' + e.message, 'error');
@@ -237,10 +242,20 @@ const app = {
 
     async fetchBoards() {
         try {
-            const res = await fetch('/api/boards');
+            const res = await this.authFetch('/api/boards');
             if (res.ok) this.boards = await res.json();
         } catch (e) {
             this.showToast('Error fetching boards: ' + e.message, 'error');
+        }
+    },
+
+    async fetchUsers() {
+        if (!this.authUser || this.authUser.role !== 'admin') return;
+        try {
+            const res = await this.authFetch('/api/auth/users');
+            if (res.ok) this.users = await res.json();
+        } catch (e) {
+            console.error('Error fetching users:', e);
         }
     },
 
@@ -248,7 +263,7 @@ const app = {
         try {
             const dateVal = dateStr || (document.getElementById('filter_log_date') ? document.getElementById('filter_log_date').value : '');
             const url = dateVal ? `/api/production/logs?date=${encodeURIComponent(dateVal)}` : '/api/production/logs';
-            const res = await fetch(url);
+            const res = await this.authFetch(url);
             if (res.ok) this.stageLogs = await res.json();
         } catch (e) {
             this.showToast('Error fetching stage logs: ' + e.message, 'error');
@@ -271,7 +286,7 @@ const app = {
         if (!confirm(`Are you sure you want to delete production stage log #${logId}?`)) return;
 
         try {
-            const res = await fetch(`/api/production/logs/${logId}`, { method: 'DELETE' });
+            const res = await this.authFetch(`/api/production/logs/${logId}`, { method: 'DELETE' });
             if (res.ok || res.status === 204) {
                 this.showToast(`Production log #${logId} deleted!`, 'success');
                 await this.refreshData();
@@ -513,7 +528,7 @@ const app = {
         };
 
         try {
-            const res = await fetch('/api/production/log', {
+            const res = await this.authFetch('/api/production/log', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -539,7 +554,7 @@ const app = {
         if (!name) return;
 
         try {
-            const res = await fetch('/api/operators', {
+            const res = await this.authFetch('/api/operators', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name })
@@ -567,7 +582,7 @@ const app = {
         if (!name) return;
 
         try {
-            const res = await fetch('/api/boards', {
+            const res = await this.authFetch('/api/boards', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, production_line_category })
@@ -587,6 +602,61 @@ const app = {
         } catch (e) {
             this.showToast('Network error: ' + e.message, 'error');
         }
+    },
+
+    async addUser(event) {
+        event.preventDefault();
+        const username = document.getElementById('new_user_username').value.trim();
+        const password = document.getElementById('new_user_password').value;
+        const role = document.getElementById('new_user_role').value;
+        const email = document.getElementById('new_user_email').value.trim() || null;
+
+        if (!username || !password) {
+            this.showToast('Username and password required', 'error');
+            return;
+        }
+
+        try {
+            const res = await this.authFetch('/api/auth/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, role, email })
+            });
+
+            if (res.ok) {
+                const newUser = await res.json();
+                this.showToast(`User account '${newUser.username}' created!`, 'success');
+                document.getElementById('new_user_username').value = '';
+                document.getElementById('new_user_password').value = '';
+                document.getElementById('new_user_email').value = '';
+                await this.fetchUsers();
+                this.renderUsersList();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Failed to create user account', 'error');
+            }
+        } catch (e) {
+            this.showToast('Error: ' + e.message, 'error');
+        }
+    },
+
+    renderUsersList() {
+        const tbody = document.getElementById('users-list-tbody');
+        if (!tbody) return;
+
+        if (!this.users || this.users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1rem;">No user accounts found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = this.users.map(u => `
+            <tr>
+                <td style="font-weight: 700; color: #ffffff;">${this.escapeHtml(u.username)}</td>
+                <td><span class="badge ${u.role === 'admin' ? 'badge-danger' : (u.role === 'tester' ? 'badge-info' : 'badge-success')}">${this.escapeHtml(u.role.toUpperCase())}</span></td>
+                <td style="font-size: 0.85rem; color: var(--text-muted);">${this.escapeHtml(u.email || '-')}</td>
+                <td style="font-size: 0.8rem; color: var(--text-dim);">${new Date(u.created_at).toLocaleDateString()}</td>
+            </tr>
+        `).join('');
     },
 
     openEditModal(partNumber) {
@@ -610,7 +680,7 @@ const app = {
         if (!confirm(`Are you sure you want to permanently delete component '${partNumber}'?`)) return;
 
         try {
-            const res = await fetch(`/api/components/${encodeURIComponent(partNumber)}`, { method: 'DELETE' });
+            const res = await this.authFetch(`/api/components/${encodeURIComponent(partNumber)}`, { method: 'DELETE' });
             if (res.ok || res.status === 204) {
                 this.showToast(`Component '${partNumber}' deleted!`, 'success');
                 this.refreshData();
@@ -637,13 +707,13 @@ const app = {
         try {
             let res;
             if (this.editingPartNumber) {
-                res = await fetch(`/api/components/${encodeURIComponent(this.editingPartNumber)}`, {
+                res = await this.authFetch(`/api/components/${encodeURIComponent(this.editingPartNumber)}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
             } else {
-                res = await fetch('/api/components', {
+                res = await this.authFetch('/api/components', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -665,7 +735,7 @@ const app = {
 
     async fetchPhysicalBoards() {
         try {
-            const res = await fetch('/api/physical-boards');
+            const res = await this.authFetch('/api/physical-boards');
             if (res.ok) this.physicalBoards = await res.json();
         } catch (e) {
             this.showToast('Error fetching physical boards: ' + e.message, 'error');
@@ -722,7 +792,7 @@ const app = {
             if (dateVal) params.append('date', dateVal);
 
             const url = params.toString() ? `/api/testing/reports?${params.toString()}` : '/api/testing/reports';
-            const res = await fetch(url);
+            const res = await this.authFetch(url);
             if (res.ok) this.testReports = await res.json();
         } catch (e) {
             this.showToast('Error fetching test reports: ' + e.message, 'error');
@@ -814,7 +884,7 @@ const app = {
         };
 
         try {
-            const res = await fetch('/api/physical-boards', {
+            const res = await this.authFetch('/api/physical-boards', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -937,7 +1007,7 @@ const app = {
         };
 
         try {
-            const res = await fetch('/api/testing/log-report', {
+            const res = await this.authFetch('/api/testing/log-report', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -961,7 +1031,7 @@ const app = {
         if (!confirm(`Are you sure you want to delete test report #${reportId}?`)) return;
 
         try {
-            const res = await fetch(`/api/testing/reports/${reportId}`, { method: 'DELETE' });
+            const res = await this.authFetch(`/api/testing/reports/${reportId}`, { method: 'DELETE' });
             if (res.ok || res.status === 204) {
                 this.showToast(`Test report #${reportId} deleted!`, 'success');
                 await this.refreshData();

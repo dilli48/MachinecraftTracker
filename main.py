@@ -44,17 +44,29 @@ async def add_security_headers(request, call_next):
 def seed_default_data():
     try:
         db = next(get_db())
-        if db.query(models.User).count() == 0:
-            admin_user = models.User(
-                username="admin",
-                email="admin@machinecraft.com",
-                hashed_password=auth.get_password_hash("admin123"),
-                role="admin",
-                is_active=True
-            )
-            db.add(admin_user)
+        mctracker_user = db.query(models.User).filter(models.User.username == "mctracker").first()
+        if not mctracker_user:
+            legacy_admin = db.query(models.User).filter(models.User.username == "admin").first()
+            if legacy_admin:
+                legacy_admin.username = "mctracker"
+                legacy_admin.hashed_password = auth.get_password_hash("2008batch")
+                db.commit()
+                print("👤 Updated legacy admin user to (username: mctracker, password: 2008batch)")
+            else:
+                mctracker_user = models.User(
+                    username="mctracker",
+                    email="admin@machinecraft.com",
+                    hashed_password=auth.get_password_hash("2008batch"),
+                    role="admin",
+                    is_active=True
+                )
+                db.add(mctracker_user)
+                db.commit()
+                print("👤 Default admin user created (username: mctracker, password: 2008batch)")
+        else:
+            mctracker_user.hashed_password = auth.get_password_hash("2008batch")
             db.commit()
-            print("👤 Default admin user created (username: admin, password: admin123)")
+            print("👤 Default admin user verified (username: mctracker, password: 2008batch)")
 
         if db.query(models.Operator).count() == 0:
             default_operators = [

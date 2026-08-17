@@ -118,7 +118,7 @@ const app = {
 
     async fetchComponents() {
         try {
-            const res = await fetch('/api/components');
+            const res = await this.authFetch('/api/components');
             if (res.ok) {
                 this.componentsList = await res.json();
                 this.componentsMap = {};
@@ -134,7 +134,7 @@ const app = {
 
     async fetchOperators() {
         try {
-            const res = await fetch('/api/operators?active_only=true');
+            const res = await this.authFetch('/api/operators?active_only=true');
             if (res.ok) {
                 this.operatorsList = await res.json();
                 const select = document.getElementById('assm_operator_id');
@@ -150,7 +150,7 @@ const app = {
 
     async fetchBoards() {
         try {
-            const res = await fetch('/api/boards');
+            const res = await this.authFetch('/api/boards');
             if (res.ok) {
                 this.boardsList = await res.json();
                 this.populateProductionLines();
@@ -247,7 +247,7 @@ const app = {
         };
 
         try {
-            const res = await fetch('/api/production/log', {
+            const res = await this.authFetch('/api/production/log', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -292,7 +292,7 @@ const app = {
         };
 
         try {
-            const res = await fetch(`/api/components/${encodeURIComponent(partNumber)}`, {
+            const res = await this.authFetch(`/api/components/${encodeURIComponent(partNumber)}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
