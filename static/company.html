@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Machinecraft Industries | Advanced Jacquard & Electronics Manufacturing</title>
-    <meta name="description" content="Machinecraft Industries - Pioneers in Jacquard Electronics, Controller Boards, and High-Precision Industrial Automation Solutions.">
+    <title>MACHINE CRAFT INDUSTRIES | Advanced Electronic Manufacturing & Industrial Automation</title>
+    <meta name="description" content="ISO 9001:2015 certified design, development, and manufacturing of custom microprocessor-based controllers, EMS assemblies, Jacquard systems, and AI automation.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
             --accent: #6366f1;
             --accent-glow: rgba(99, 102, 241, 0.35);
             --success: #10b981;
+            --warning: #f59e0b;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: rgba(255, 255, 255, 0.1);
@@ -29,6 +30,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -38,13 +40,13 @@
             line-height: 1.6;
         }
 
-        /* Animated Background Gradients */
+        /* Ambient Glow Background Effects */
         .bg-glow-1 {
-            position: absolute;
-            top: -100px;
-            left: -100px;
-            width: 500px;
-            height: 500px;
+            position: fixed;
+            top: -150px;
+            left: -150px;
+            width: 600px;
+            height: 600px;
             background: radial-gradient(circle, var(--primary-glow) 0%, rgba(0,0,0,0) 70%);
             border-radius: 50%;
             z-index: 0;
@@ -52,11 +54,11 @@
         }
 
         .bg-glow-2 {
-            position: absolute;
-            top: 300px;
-            right: -150px;
-            width: 600px;
-            height: 600px;
+            position: fixed;
+            top: 400px;
+            right: -200px;
+            width: 700px;
+            height: 700px;
             background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
             border-radius: 50%;
             z-index: 0;
@@ -69,7 +71,7 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(16px);
-            background: rgba(9, 13, 22, 0.8);
+            background: rgba(9, 13, 22, 0.85);
             border-bottom: 1px solid var(--border-color);
             padding: 1rem 2rem;
             display: flex;
@@ -86,8 +88,8 @@
         }
 
         .brand-icon {
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             background: linear-gradient(135deg, var(--primary), var(--accent));
             border-radius: 10px;
             display: flex;
@@ -100,7 +102,7 @@
         .brand-name {
             font-family: 'Outfit', sans-serif;
             font-size: 1.35rem;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: -0.5px;
             background: linear-gradient(90deg, #ffffff, #cbd5e1);
             -webkit-background-clip: text;
@@ -109,7 +111,7 @@
 
         nav {
             display: flex;
-            gap: 2rem;
+            gap: 1.8rem;
             align-items: center;
         }
 
@@ -125,10 +127,10 @@
             color: #fff;
         }
 
-        .btn-contact-nav {
+        .btn-quote {
             background: linear-gradient(135deg, var(--primary), #0369a1);
             color: #fff !important;
-            padding: 0.6rem 1.4rem;
+            padding: 0.65rem 1.4rem;
             border-radius: 8px;
             font-weight: 600 !important;
             box-shadow: 0 4px 15px var(--primary-glow);
@@ -136,9 +138,11 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            cursor: pointer;
+            border: none;
         }
 
-        .btn-contact-nav:hover {
+        .btn-quote:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
         }
@@ -149,29 +153,36 @@
             z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 6rem 2rem 5rem 2rem;
+            padding: 5rem 2rem 4rem 2rem;
             text-align: center;
         }
 
-        .hero-badge {
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .badge-item {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(2, 132, 199, 0.15);
+            background: rgba(2, 132, 199, 0.12);
             border: 1px solid rgba(2, 132, 199, 0.3);
             color: #38bdf8;
             padding: 0.4rem 1rem;
             border-radius: 50px;
             font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 1.5rem;
         }
 
         .hero h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 3.5rem;
+            font-size: 3.4rem;
             font-weight: 800;
-            line-height: 1.15;
+            line-height: 1.18;
             margin-bottom: 1.5rem;
             background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
             -webkit-background-clip: text;
@@ -181,7 +192,7 @@
         .hero p {
             font-size: 1.2rem;
             color: var(--text-muted);
-            max-width: 760px;
+            max-width: 820px;
             margin: 0 auto 2.5rem auto;
         }
 
@@ -202,6 +213,8 @@
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
+            cursor: pointer;
+            border: none;
         }
 
         .btn-primary-lg {
@@ -226,40 +239,59 @@
             transform: translateY(-3px);
         }
 
-        /* Stats Bar */
-        .stats-grid {
-            max-width: 1000px;
-            margin: 4rem auto 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .stat-card {
+        /* About Us Section */
+        .about-section {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 4rem 2rem;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            border-radius: 14px;
+            border-radius: 20px;
             backdrop-filter: blur(12px);
         }
 
-        .stat-number {
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .about-text h2 {
             font-family: 'Outfit', sans-serif;
             font-size: 2.2rem;
             font-weight: 700;
-            color: #38bdf8;
+            margin-bottom: 1rem;
+            color: #fff;
         }
 
-        .stat-label {
-            font-size: 0.9rem;
+        .about-text p {
             color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 1.25rem;
         }
 
-        /* Solutions Section */
-        .solutions-container {
+        .chip-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1.5rem;
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        /* Products & Solutions */
+        .section-container {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 2rem 6rem 2rem;
+            margin: 5rem auto;
+            padding: 0 2rem;
         }
 
         .section-title {
@@ -269,38 +301,41 @@
 
         .section-title h2 {
             font-family: 'Outfit', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 700;
+            font-size: 2.3rem;
+            font-weight: 800;
             color: #fff;
         }
 
         .section-title p {
             color: var(--text-muted);
+            font-size: 1.1rem;
             margin-top: 0.5rem;
         }
 
-        .solutions-grid {
+        .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 2rem;
         }
 
-        .solution-card {
+        .product-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 2.2rem;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
-        .solution-card:hover {
+        .product-card:hover {
             background: var(--bg-card-hover);
             border-color: rgba(2, 132, 199, 0.4);
             transform: translateY(-5px);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
 
-        .solution-icon {
+        .product-icon {
             width: 56px;
             height: 56px;
             border-radius: 12px;
@@ -314,102 +349,259 @@
             border: 1px solid rgba(2, 132, 199, 0.3);
         }
 
-        .solution-card h3 {
+        .product-card h3 {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.4rem;
+            font-size: 1.45rem;
             margin-bottom: 0.8rem;
             color: #fff;
         }
 
-        .solution-card p {
+        .product-card p {
             color: var(--text-muted);
             font-size: 0.95rem;
+            margin-bottom: 1.25rem;
         }
 
-        /* Features Section */
-        .features-section {
-            background: rgba(15, 23, 42, 0.4);
+        .specs-list {
+            list-style: none;
+            margin-top: auto;
             border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            padding: 5rem 2rem;
+            padding-top: 1rem;
         }
 
-        .features-grid {
-            max-width: 1200px;
-            margin: 0 auto;
+        .specs-list li {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+
+        .specs-list li i {
+            color: var(--success);
+            margin-top: 0.2rem;
+        }
+
+        /* EMS Process Timeline */
+        .process-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
 
-        .feature-item {
+        .process-step {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
             padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
         }
 
-        .feature-item i {
+        .step-num {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .process-step h4 {
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .process-step p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* QA Testing Cards */
+        .qa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .qa-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 1.8rem;
+            border-radius: 14px;
+        }
+
+        .qa-card i {
             font-size: 1.8rem;
-            color: var(--primary);
+            color: var(--accent);
             margin-bottom: 1rem;
         }
 
-        .feature-item h4 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.2rem;
+        .qa-card h4 {
             color: #fff;
+            font-size: 1.2rem;
             margin-bottom: 0.5rem;
         }
 
-        .feature-item p {
+        .qa-card p {
             color: var(--text-muted);
             font-size: 0.9rem;
         }
 
-        /* Contact Section */
-        .contact-section {
-            max-width: 900px;
-            margin: 5rem auto;
-            padding: 3rem 2rem;
-            background: var(--bg-card);
+        /* Modal for Request Quote */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-card {
+            background: #0f172a;
             border: 1px solid var(--border-color);
-            border-radius: 20px;
-            text-align: center;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 550px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         }
 
-        .contact-section h2 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .contact-section p {
+        .modal-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: transparent;
+            border: none;
             color: var(--text-muted);
-            margin-bottom: 2rem;
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
         }
 
         /* Footer */
         footer {
+            background: rgba(9, 13, 22, 0.95);
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 2rem 2rem 2rem;
+            margin-top: 6rem;
+        }
+
+        .footer-grid {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 3rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-col h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 1.25rem;
+        }
+
+        .footer-col p, .footer-col li {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.6rem;
+        }
+
+        .footer-col ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-col ul li a:hover {
+            color: #38bdf8;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid var(--border-color);
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             flex-wrap: wrap;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         @media (max-width: 768px) {
             .hero h1 {
-                font-size: 2.4rem;
+                font-size: 2.2rem;
+            }
+            .about-grid {
+                grid-template-columns: 1fr;
             }
             header {
                 flex-direction: column;
                 gap: 1rem;
             }
-            footer {
+            .footer-bottom {
                 flex-direction: column;
                 text-align: center;
             }
@@ -421,139 +613,366 @@
     <div class="bg-glow-1"></div>
     <div class="bg-glow-2"></div>
 
-    <!-- Header Navigation -->
+    <!-- Header / Navigation Bar -->
     <header>
         <a href="/" class="brand-logo">
             <div class="brand-icon">
                 <i class="fa-solid fa-microchip"></i>
             </div>
-            <span class="brand-name">Machinecraft Industries</span>
+            <span class="brand-name">MACHINE CRAFT INDUSTRIES</span>
         </a>
 
         <nav>
-            <a href="#products">Products</a>
-            <a href="#capabilities">Capabilities</a>
+            <a href="#">Home</a>
             <a href="#about">About Us</a>
-            <a href="#contact" class="btn-contact-nav">
-                <i class="fa-solid fa-envelope"></i> Contact Us
-            </a>
+            <a href="#products">Products & Solutions</a>
+            <a href="#manufacturing">Manufacturing</a>
+            <a href="#qa">Quality Assurance</a>
+            <a href="#contact">Contact</a>
+            <button onclick="openQuoteModal()" class="btn-quote">
+                <i class="fa-solid fa-paper-plane"></i> Get a Quote
+            </button>
         </nav>
     </header>
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-badge">
-            <i class="fa-solid fa-bolt"></i> Next-Gen Jacquard & Industrial Electronics Manufacturing
+        <div class="trust-badges">
+            <div class="badge-item"><i class="fa-solid fa-certificate"></i> ISO 9001:2015 Certified</div>
+            <div class="badge-item"><i class="fa-solid fa-file-invoice"></i> GST Registered</div>
+            <div class="badge-item"><i class="fa-solid fa-shield-check"></i> 100% Quality Tested</div>
         </div>
-        <h1>Engineering Precision Electronics & Jacquard Controllers</h1>
-        <p>Pioneering High-Reliability Circuitry, Embedded Jacquard Control Systems, and Custom Industrial Electronics Manufacturing for Textile and Automation Industries.</p>
+
+        <h1>Advanced Electronic Manufacturing & Industrial Automation Solutions</h1>
+        <p>ISO 9001:2015 certified design, development, and manufacturing of custom microprocessor-based controllers, EMS assemblies, and AI automation systems.</p>
         
         <div class="hero-actions">
             <a href="#products" class="btn-lg btn-primary-lg">
-                <i class="fa-solid fa-microchip"></i> Explore Solutions
+                <i class="fa-solid fa-microchip"></i> Explore Our Products
             </a>
-            <a href="#contact" class="btn-lg btn-secondary-lg">
-                <i class="fa-solid fa-paper-plane"></i> Contact Sales
-            </a>
+            <button onclick="openQuoteModal()" class="btn-lg btn-secondary-lg">
+                <i class="fa-solid fa-file-pen"></i> Request Custom Design
+            </button>
         </div>
+    </section>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">100%</div>
-                <div class="stat-label">Industrial Quality Verified</div>
+    <!-- About Us Section -->
+    <section id="about" class="about-section">
+        <div class="about-grid">
+            <div class="about-text">
+                <h2>Who We Are</h2>
+                <p><strong>MACHINE CRAFT INDUSTRIES</strong> is a premier electronics engineering and manufacturing firm headquartered in Tiruvallur, Tamil Nadu. We specialize in the end-to-end design, development, manufacture, installation, and commissioning of microprocessor-based controllers and advanced automation systems.</p>
+                <p>With deep expertise in embedded systems, custom PCB manufacturing, and robust microcontroller architectures (including STM32 and ESP32-based designs), we transform complex industrial requirements into reliable hardware. From AI automation solutions and customized software development to mission-critical railway infrastructure, we deliver technology that drives industry forward.</p>
+
+                <div class="chip-tags">
+                    <span class="chip"><i class="fa-solid fa-check"></i> STM32 & ESP32 Architectures</span>
+                    <span class="chip"><i class="fa-solid fa-check"></i> Railway AC Coach Controllers</span>
+                    <span class="chip"><i class="fa-solid fa-check"></i> Multi-layer PCB Assembly</span>
+                    <span class="chip"><i class="fa-solid fa-check"></i> Custom Firmware Engineering</span>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">Precision</div>
-                <div class="stat-label">High-Speed SMT Manufacturing</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">Zero-Defect</div>
-                <div class="stat-label">Rigorous Testing Protocol</div>
+            <div>
+                <div style="background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.25); padding: 2.5rem; border-radius: 16px; text-align: center;">
+                    <i class="fa-solid fa-industry" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; color: #fff; margin-bottom: 0.8rem;">Engineering Excellence</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">Delivering zero-defect industrial controllers and specialized EMS assemblies backed by ISO 9001:2015 standards.</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Products & Solutions Section -->
-    <section id="products" class="solutions-container">
+    <!-- Products & Solutions -->
+    <section id="products" class="section-container">
         <div class="section-title">
-            <h2>Industrial Solutions & Electronics</h2>
-            <p>Advanced embedded hardware engineered for harsh factory environments and continuous operation.</p>
+            <h2>Products & Core Solutions</h2>
+            <p>High-precision embedded systems and industrial control hardware engineered for harsh factory environments.</p>
         </div>
 
-        <div class="solutions-grid">
-            <!-- Product 1: Jacquard Controllers -->
-            <div class="solution-card">
-                <div class="solution-icon">
+        <div class="products-grid">
+            <!-- 1. Electronic Jacquard Systems -->
+            <div class="product-card">
+                <div class="product-icon">
                     <i class="fa-solid fa-sliders"></i>
                 </div>
-                <h3>Jacquard Controller Systems</h3>
-                <p>High-speed, multi-phase Jacquard controller modules (1-Phase, 3-Phase, and ALL CL Card Controllers) optimized for high-pick textile looms.</p>
+                <h3>Electronic Jacquard Systems</h3>
+                <p>Next-generation control systems engineered specifically for the textile industry.</p>
+                <ul class="specs-list">
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Smart Display Boards:</strong> 2.8", 3.2", 4.3", & 7" with integrated WiFi & Bluetooth for wireless monitoring.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>High-Capacity Distribution Boards:</strong> Scalable 8, 12, 16, & 20-connector variants supporting up to 10,000 hooks.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>M5 Module Coil Cards:</strong> Fully custom CL cards engineered to any company's specifications.</li>
+                </ul>
             </div>
 
-            <!-- Product 2: High-Speed SMT Assembly -->
-            <div class="solution-card">
-                <div class="solution-icon">
-                    <i class="fa-solid fa-industry"></i>
+            <!-- 2. Intelligent Door Controllers -->
+            <div class="product-card">
+                <div class="product-icon">
+                    <i class="fa-solid fa-door-open"></i>
                 </div>
-                <h3>Precision SMT PCB Assembly</h3>
-                <p>Surface-mount technology (SMT) and through-hole component integration with ultra-low thermal resistance and high noise immunity.</p>
+                <h3>Intelligent Door Controllers</h3>
+                <p>Precision-engineered door control units for heavy-duty transit and Railway AC Coaches.</p>
+                <ul class="specs-list">
+                    <li><i class="fa-solid fa-circle-check"></i> Railway AC Coach Door Control Modules</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Internal Coach Automatic Door Systems</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Heavy-Duty Plug Door Controllers</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Shutter Door Industrial Automation</li>
+                </ul>
             </div>
 
-            <!-- Product 3: Custom Embedded Systems -->
-            <div class="solution-card">
-                <div class="solution-icon">
-                    <i class="fa-solid fa-gears"></i>
+            <!-- 3. Electronic Temperature Controllers -->
+            <div class="product-card">
+                <div class="product-icon">
+                    <i class="fa-solid fa-temperature-high"></i>
                 </div>
-                <h3>Custom Industrial Automation</h3>
-                <p>Tailored microprocessor architectures, motor control interfaces, and display units designed to client specifications.</p>
+                <h3>Electronic Temperature Controllers</h3>
+                <p>Highly accurate thermal management systems for demanding industrial environments.</p>
+                <ul class="specs-list">
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Applications:</strong> Industrial Heaters, Coolers, & Commercial Dryers.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Real-time multi-sensor thermal monitoring.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Precise set-point control with ruggedized logic control.</li>
+                </ul>
+            </div>
+
+            <!-- 4. Advanced Motor Controllers -->
+            <div class="product-card">
+                <div class="product-icon">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h3>Advanced Motor Controllers</h3>
+                <p>Industrial-grade motor control units integrated with heavy-duty safety and cutoff logic.</p>
+                <ul class="specs-list">
+                    <li><i class="fa-solid fa-circle-check"></i> 1-Phase ON/OFF with precise sensor cutoff.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> 3-Phase ON/OFF with heavy-duty sensor cutoff.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> 1-Phase ON/OFF equipped with dynamic braking mechanisms.</li>
+                </ul>
+            </div>
+
+            <!-- 5. Custom HMI Displays -->
+            <div class="product-card">
+                <div class="product-icon">
+                    <i class="fa-solid fa-desktop"></i>
+                </div>
+                <h3>Custom HMI Displays</h3>
+                <p>Intuitive, custom-programmed Human-Machine Interfaces for seamless operator control.</p>
+                <ul class="specs-list">
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Form Factors:</strong> 2.8", 3.2", 4.3", 5", & 7" sizes.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Custom UI/UX design & responsive touch integration.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Seamless integration with PLC & embedded logic.</li>
+                </ul>
+            </div>
+
+            <!-- 6. Custom PCB & AI Embedded Automation -->
+            <div class="product-card">
+                <div class="product-icon">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <h3>AI & Embedded Automation</h3>
+                <p>Tailored microprocessor hardware & custom software for industrial automation.</p>
+                <ul class="specs-list">
+                    <li><i class="fa-solid fa-circle-check"></i> STM32 / ESP32 custom board layout & fabrication.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> AI automation solutions & customized firmware.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> End-to-end commissioning and field installation.</li>
+                </ul>
             </div>
         </div>
     </section>
 
-    <!-- Manufacturing Capabilities -->
-    <section id="capabilities" class="features-section">
+    <!-- Manufacturing Capabilities & Quality Assurance -->
+    <section id="manufacturing" class="section-container">
         <div class="section-title">
-            <h2>Our Manufacturing Standards</h2>
-            <p>State-of-the-art production engineering and rigorous quality verification.</p>
+            <h2>Manufacturing & Quality Assurance</h2>
+            <p>State-of-the-Art EMS Assembly Line & Rigorous ISO 9001:2015 Testing Protocols.</p>
         </div>
 
-        <div class="features-grid">
-            <div class="feature-item">
-                <i class="fa-solid fa-microchip"></i>
-                <h4>High-Density Circuit Design</h4>
-                <p>Multi-layer PCB layout design built for electromagnetic compatibility and thermal efficiency.</p>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2.5rem; margin-bottom: 3rem;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; color: #fff; margin-bottom: 0.8rem;"><i class="fa-solid fa-microchip" style="color: var(--primary);"></i> Precision EMS Assembly Line</h3>
+            <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem;">Quality is engineered directly into our production workflow. We operate specialized Electronics Manufacturing Services (EMS) equipment handled by qualified engineering staff to guarantee zero-defect manufacturing.</p>
+
+            <div class="process-grid">
+                <div class="process-step">
+                    <div class="step-num">1</div>
+                    <h4>Solder Paste Stenciling</h4>
+                    <p>Automated, high-precision solder stencil application.</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-num">2</div>
+                    <h4>SMT Component Pick & Place</h4>
+                    <p>High-speed, accurate component routing and placement.</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-num">3</div>
+                    <h4>Reflow Thermal Oven</h4>
+                    <p>Controlled thermal profiling for perfect solder bonding.</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-num">4</div>
+                    <h4>Wave Soldering Line</h4>
+                    <p>Superior bonding for heavy-duty through-hole components.</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-num">5</div>
+                    <h4>Ultrasonic Cleaning</h4>
+                    <p>Complete removal of flux and particulate residue.</p>
+                </div>
             </div>
-            <div class="feature-item">
-                <i class="fa-solid fa-robot"></i>
-                <h4>Automated Assembly Lines</h4>
-                <p>Pick-and-place precision assembly with real-time component validation.</p>
-            </div>
-            <div class="feature-item">
-                <i class="fa-solid fa-shield-halved"></i>
-                <h4>Stress & Thermal Validation</h4>
-                <p>Continuous thermal endurance testing and voltage cycle validation for maximum reliability.</p>
+        </div>
+
+        <!-- Testing Protocols -->
+        <div id="qa">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; color: #fff; margin-bottom: 1rem; text-align: center;"><i class="fa-solid fa-shield-halved" style="color: var(--accent);"></i> Rigorous Testing Protocol</h3>
+            <p style="color: var(--text-muted); font-size: 1rem; text-align: center; max-width: 700px; margin: 0 auto 2rem auto;">Every circuit board that leaves our facility undergoes strict validation to exceed ISO 9001:2015 standards:</p>
+
+            <div class="qa-grid">
+                <div class="qa-card">
+                    <i class="fa-solid fa-eye"></i>
+                    <h4>Automated Optical Inspection (AOI)</h4>
+                    <p>Automated visual checks for microscopic component alignment, polarity verification, and solder joint integrity.</p>
+                </div>
+                <div class="qa-card">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
+                    <h4>Burn-In Chamber Testing</h4>
+                    <p>Extreme thermal stress cycling to eliminate early-life component failures and guarantee field durability.</p>
+                </div>
+                <div class="qa-card">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <h4>Endurance Stress Testing</h4>
+                    <p>Prolonged operational stress cycling under load to guarantee lifetime performance in harsh industrial environments.</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="contact-section">
-        <h2>Get in Touch with Machinecraft Industries</h2>
-        <p>Interested in our Jacquard control systems or custom electronics manufacturing services? Contact our engineering team today.</p>
-        <a href="mailto:contact@mcinds.in" class="btn-lg btn-primary-lg">
-            <i class="fa-solid fa-envelope"></i> Email Us: contact@mcinds.in
-        </a>
+    <section id="contact" class="section-container">
+        <div class="section-title">
+            <h2>Contact MACHINE CRAFT INDUSTRIES</h2>
+            <p>Connect with our engineering team for custom hardware quotes and manufacturing inquiries.</p>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 3rem; max-width: 900px; margin: 0 auto; text-align: center;">
+            <i class="fa-solid fa-location-dot" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; color: #fff; margin-bottom: 0.5rem;">Principal Place of Business</h3>
+            <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1.5rem; line-height: 1.7;">
+                II ND FLOOR, NO.20A, E.A.P SIVAJI STREET, KUPPUSAMY NAGAR,<br>
+                ONDIKUPPAM, MANAVALA NAGAR, Tiruvallur, Tamil Nadu – 602002, India
+            </p>
+            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                <a href="mailto:contact@mcinds.in" class="btn-lg btn-primary-lg">
+                    <i class="fa-solid fa-envelope"></i> Email: contact@mcinds.in
+                </a>
+                <button onclick="openQuoteModal()" class="btn-lg btn-secondary-lg">
+                    <i class="fa-solid fa-file-pen"></i> Request Custom Quote
+                </button>
+            </div>
+        </div>
     </section>
+
+    <!-- Modal for Quote Request -->
+    <div id="quoteModal" class="modal-overlay">
+        <div class="modal-card">
+            <button onclick="closeQuoteModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; color: #fff; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-signature" style="color: var(--primary);"></i> Request a Custom Quote</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Submit your requirement details and our engineering team will get back to you within 24 hours.</p>
+
+            <form onsubmit="handleQuoteSubmit(event)">
+                <div class="form-group">
+                    <label>Full Name / Company *</label>
+                    <input type="text" id="quote_name" class="form-control" required placeholder="e.g. Acme Automation Corp">
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="quote_email" class="form-control" required placeholder="name@company.com">
+                </div>
+                <div class="form-group">
+                    <label>Product / Solution Required *</label>
+                    <select id="quote_product" class="form-control" required>
+                        <option value="Electronic Jacquard Systems">Electronic Jacquard Systems</option>
+                        <option value="Intelligent Door Controllers">Intelligent Door Controllers (Railway AC Coach)</option>
+                        <option value="Electronic Temperature Controllers">Electronic Temperature Controllers</option>
+                        <option value="Advanced Motor Controllers">Advanced Motor Controllers</option>
+                        <option value="Custom HMI Displays">Custom HMI Displays</option>
+                        <option value="Custom PCB / EMS Assembly">Custom PCB / EMS Assembly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Requirement Details</label>
+                    <textarea id="quote_details" class="form-control" rows="3" placeholder="Specify board volume, display size, or microcontroller preference..."></textarea>
+                </div>
+                <button type="submit" class="btn-quote" style="width: 100%; justify-content: center; padding: 0.85rem; font-size: 1rem;">
+                    Submit Quote Request
+                </button>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer>
-        <div>
-            <strong>Machinecraft Industries</strong> &copy; 2026. All rights reserved.
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="brand-logo" style="margin-bottom: 1rem;">
+                    <div class="brand-icon"><i class="fa-solid fa-microchip"></i></div>
+                    <span class="brand-name">MACHINE CRAFT INDUSTRIES</span>
+                </div>
+                <p>ISO 9001:2015 certified manufacturer of custom microprocessor-based controllers, electronic Jacquard systems, railway door control modules, and EMS PCB assemblies.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Core Products</h4>
+                <ul>
+                    <li><a href="#products">Electronic Jacquard Systems</a></li>
+                    <li><a href="#products">Intelligent Door Controllers</a></li>
+                    <li><a href="#products">Electronic Temperature Controllers</a></li>
+                    <li><a href="#products">Advanced Motor Controllers</a></li>
+                    <li><a href="#products">Custom HMI Touch Displays</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Manufacturing & Standards</h4>
+                <ul>
+                    <li><a href="#manufacturing">Automated SMT Pick & Place</a></li>
+                    <li><a href="#manufacturing">Reflow & Wave Soldering Line</a></li>
+                    <li><a href="#qa">Automated Optical Inspection (AOI)</a></li>
+                    <li><a href="#qa">Burn-In & Thermal Stress Cycling</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Compliance & Location</h4>
+                <p><i class="fa-solid fa-certificate" style="color: var(--primary);"></i> ISO 9001:2015 Certified</p>
+                <p><i class="fa-solid fa-file-invoice" style="color: var(--success);"></i> GST Registered Enterprise</p>
+                <p><i class="fa-solid fa-location-dot" style="color: var(--accent);"></i> Manavala Nagar, Tiruvallur, TN 602002</p>
+            </div>
         </div>
-        <div>
-            Official Domain: <a href="https://mcinds.in" style="color: #38bdf8; text-decoration: none;">mcinds.in</a>
+
+        <div class="footer-bottom">
+            <div>
+                &copy; 2026 <strong>MACHINE CRAFT INDUSTRIES</strong>. All rights reserved.
+            </div>
+            <div>
+                Official Domain: <a href="https://mcinds.in" style="color: #38bdf8; text-decoration: none;">mcinds.in</a> | GST Registered
+            </div>
         </div>
     </footer>
+
+    <script>
+        function openQuoteModal() {
+            document.getElementById('quoteModal').style.display = 'flex';
+        }
+        function closeQuoteModal() {
+            document.getElementById('quoteModal').style.display = 'none';
+        }
+        function handleQuoteSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('quote_name').value;
+            const email = document.getElementById('quote_email').value;
+            const product = document.getElementById('quote_product').value;
+            const details = document.getElementById('quote_details').value;
+            
+            const mailtoUrl = `mailto:contact@mcinds.in?subject=Quote Request from ${encodeURIComponent(name)} - ${encodeURIComponent(product)}&body=${encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nProduct: " + product + "\n\nDetails:\n" + details)}`;
+            window.location.href = mailtoUrl;
+            closeQuoteModal();
+        }
+    </script>
 
 </body>
 </html>
