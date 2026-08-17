@@ -1,83 +1,80 @@
-import requests
-import json
-import sys
+import unittest
+from fastapi.testclient import TestClient
+from main import app
 
-BASE_URL = "http://127.0.0.1:8000"
-
-def test_api():
-    print("--- 1. Testing Health Endpoint ---")
-    res = requests.get(f"{BASE_URL}/health")
-    assert res.status_code == 200, f"Health check failed: {res.text}"
-    print("Health response:", res.json())
-
-    print("\n--- 2. Testing Authentication (/api/auth/login) ---")
-    login_res = requests.post(f"{BASE_URL}/api/auth/login", json={"username": "mctracker", "password": "2008batch"})
-    assert login_res.status_code == 200, f"Login failed: {login_res.text}"
-    token_data = login_res.json()
-    token = token_data["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
-    print(f"Logged in as admin successfully. Role: {token_data['user']['role']}")
-
-    print("\n--- 3. Testing /api/auth/me ---")
-    me_res = requests.get(f"{BASE_URL}/api/auth/me", headers=headers)
-    assert me_res.status_code == 200, f"Auth me check failed: {me_res.text}"
-    print("User profile:", me_res.json())
-
-    print("\n--- 4. Creating Initial Components ---")
-    components_to_create = [
-        {
-            "part_number": "RES-10K-0805",
-            "type": "Resistor",
-            "footprint": "0805",
-            "current_stock": 100,
-            "minimum_threshold": 20,
-            "comments": "10k Ohm 1% surface mount"
-        },
-        {
-            "part_number": "CAP-100NF-0603",
-            "type": "Capacitor",
-            "footprint": "0603",
-            "current_stock": 50,
-            "minimum_threshold": 10,
-            "comments": "100nF 50V ceramic"
-        },
-        {
-            "part_number": "MCU-ESP32-WROOM",
-            "type": "Microcontroller",
-            "footprint": "Module",
-            "current_stock": 10,
-            "minimum_threshold": 5,
-            "comments": "ESP32 WiFi/BLE Module"
-        }
-    ]
-
-    for comp in components_to_create:
-        res = requests.post(f"{BASE_URL}/api/components", json=comp, headers=headers)
-        if res.status_code == 201:
-            print(f"Created: {comp['part_number']}")
-        elif res.status_code == 400 and "already exists" in res.text:
-            print(f"Already exists: {comp['part_number']}")
+class MachinecraftTrackerApiTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.client_context = TestClient(app)
+        cls.client = cls.client_context.__enter__()
+        login_res = cls.client.post("/api/auth/login", json={"username": "mctracker", "password": "2008batch"})
+        if login_res.status_code == 200:
+            cls.token = login_res.json().get("access_token")
+            cls.headers = {"Authorization": f"Bearer {cls.token}"}
         else:
-            print(f"Error creating {comp['part_number']}:", res.status_code, res.text)
+            cls.token = None
+            cls.headers = {}
 
-    print("\n--- 5. Fetching All Components ---")
-    res = requests.get(f"{BASE_URL}/api/components", headers=headers)
-    assert res.status_code == 200
-    print("Components in DB count:", len(res.json()))
+    @classmethod
+    def tearDownClass(cls):
+        cls.client_context.__exit__(None, None, None)
 
-    print("\n--- 6. Testing Physical Board Registration ---")
-    board_payload = {
-        "serial_number": "SN-TEST-2026-999",
-        "product_id": 1,
-        "current_status": "IN_TESTING"
-    }
-    res = requests.post(f"{BASE_URL}/api/physical-boards", json=board_payload, headers=headers)
-    if res.status_code in [200, 201]:
-        print("Registered physical board serial successfully.")
-    else:
-        print("Board register response:", res.status_code, res.text)
+    def test_01_health_endpoint(self):
+        res = self.client.get("/health")
+        self.assertEqual(res.status_code, 200, f"Health check failed: {res.text}")
+        self.assertEqual(res.json().get("status"), "ok")
 
-    print("\nALL TESTS PASSED SUCCESSFULLY!")
+    def test_02_login_and_auth_me(self):
+        login_res = self.client.post("/api/auth/login", json={"username": "mctracker", "password": "2008batch"})
+        self.assertEqual(login_res.status_code, 200, f"Login failed: {login_res.text}")
+        token_data = login_res.json()
+        self.assertIn("access_token", token_data)
+        
+        headers = {"Authorization": f"Bearer {token_data['access_token']}"}
+        me_res = self.client.get("/api/auth/me", headers=headers)
+        self.assertEqual(me_res.status_code, 200, f"Auth me check failed: {me_res.text}")
+        self.assertEqual(me_res.json().get("username"), "mctracker")
+
+    def test_03_component_creation_and_list(self):
+        components_to_create = [
+            {
+                "part_number": "RES-10K-0805",
+                "type": "Resistor",
+                "footprint": "0805",
+                "current_stock": 100,
+                "minimum_threshold": 20,
+                "comments": "10k Ohm 1% surface mount"
+            },
+            {
+                "part_number": "CAP-100NF-0603",
+                "type": "Capacitor",
+                "footprint": "0603",
+                "current_stock": 50,
+                "minimum_threshold": 10,
+                "comments": "100nF 50V ceramic"
+            }
+        ]
+
+        for comp in components_to_create:
+            res = self.client.post("/api/components", json=comp, headers=self.headers)
+            self.assertIn(res.status_code, [200, 201, 400])
+
+        res = self.client.get("/api/components", headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+        self.assertIsInstance(res.json(), list)
+
+    def test_04_user_management(self):
+        new_user = {
+            "username": "test_operator",
+            "password": "password123",
+            "role": "operator",
+            "email": "operator@machinecraft.com"
+        }
+        res = self.client.post("/api/auth/users", json=new_user, headers=self.headers)
+        self.assertIn(res.status_code, [200, 201, 400])
+
+        res_list = self.client.get("/api/auth/users", headers=self.headers)
+        self.assertEqual(res_list.status_code, 200)
 
 if __name__ == "__main__":
-    test_api()
+    unittest.main()
