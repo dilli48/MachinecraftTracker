@@ -33,9 +33,9 @@ echo "y" | sudo ufw enable
 
 echo "=== 4. Starting Containers ==="
 if [ -f "docker-compose.yml" ]; then
-    docker compose up -d --build
+    sudo docker compose up -d --build
     echo "=== Container Status ==="
-    docker compose ps
+    sudo docker compose ps
 else
     echo "Warning: docker-compose.yml not found in current directory."
 fi
