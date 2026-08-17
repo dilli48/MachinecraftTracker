@@ -19,6 +19,8 @@ services:
     build: .
     container_name: machinecraft_web
     restart: always
+    expose:
+      - "8080"
     ports:
       - "8080:8080"
     environment:
@@ -32,5 +34,21 @@ services:
       db:
         condition: service_healthy
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: machinecraft_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

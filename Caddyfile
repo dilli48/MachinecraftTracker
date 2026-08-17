@@ -1,0 +1,3 @@
+mcinds.in, www.mcinds.in {
+    reverse_proxy web:8080
+}
