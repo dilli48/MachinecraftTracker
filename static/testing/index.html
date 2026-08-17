@@ -214,17 +214,16 @@
             <form id="auth-login-form" onsubmit="app.handleLogin(event)">
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="login_username" style="font-size: 0.85rem; color: var(--text-secondary);">Username *</label>
-                    <input type="text" id="login_username" class="input-mobile" required placeholder="Username (e.g. mctracker)">
+                    <input type="text" id="login_username" class="input-mobile" required placeholder="Enter username">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="login_password" style="font-size: 0.85rem; color: var(--text-secondary);">Password *</label>
-                    <input type="password" id="login_password" class="input-mobile" required placeholder="Password">
+                    <input type="password" id="login_password" class="input-mobile" required placeholder="Enter password">
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; font-size: 0.8rem; color: var(--text-secondary);">
                     <label style="display: flex; align-items: center; gap: 0.4rem;">
                         <input type="checkbox" id="login_remember" checked style="accent-color: #0284c7;"> Stay Logged In
                     </label>
-                    <span>Default: mctracker / 2008batch</span>
                 </div>
                 <button type="submit" class="btn-submit-giant" style="margin-top: 0; background: linear-gradient(135deg, #0284c7, #0369a1);">
                     <i class="fa-solid fa-right-to-bracket"></i> SIGN IN
