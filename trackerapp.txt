@@ -123,5 +123,3 @@ Seco Board QA Test
   "MultiFileSelectOption":"1",
   "Remarks":"Any comments by testing engineer"	
 }
-
-postgresql://neondb_owner:npg_92CMjHOiSlyd@ep-rough-band-ay2kapu7.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require
