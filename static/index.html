@@ -28,6 +28,11 @@
                         <span class="pulse-dot"></span>
                         <span>PostgreSQL Active</span>
                     </div>
+                    <div id="user-profile-badge" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.85rem; background: rgba(255,255,255,0.06); padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <i class="fa-solid fa-circle-user" style="color: var(--primary);"></i>
+                        <span id="user-display-name">Admin</span>
+                        <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-left: 0.25rem;" onclick="app.logout()">Logout</button>
+                    </div>
                     <button class="btn btn-secondary" onclick="app.refreshData()">
                         <i class="fa-solid fa-rotate"></i> Refresh
                     </button>
@@ -670,6 +675,41 @@
             <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
                 <button type="button" class="btn btn-secondary" onclick="app.closeModal('view-json-modal')">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal 8: Persistent 1-Time Login Modal -->
+    <div class="modal-overlay" id="auth-login-modal" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);">
+        <div class="modal" style="max-width: 420px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+            <div class="modal-header" style="justify-content: center; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem;">
+                <div>
+                    <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"><i class="fa-solid fa-user-lock"></i></div>
+                    <div class="modal-title" style="font-size: 1.35rem; font-weight: 700;">Machinecraft Tracker Login</div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;">Log in once to stay signed in permanently</div>
+                </div>
+            </div>
+            <form id="auth-login-form" onsubmit="app.handleLogin(event)" style="padding-top: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="login_username">Username *</label>
+                    <input type="text" id="login_username" class="form-control" required placeholder="Enter username (e.g. admin)">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="login_password">Password *</label>
+                    <input type="password" id="login_password" class="form-control" required placeholder="Enter password">
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; font-size: 0.82rem; color: var(--text-muted);">
+                    <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                        <input type="checkbox" id="login_remember" checked style="accent-color: var(--primary);"> Stay Logged In
+                    </label>
+                    <span style="font-size: 0.78rem; color: var(--text-dim);">Default: admin / admin123</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.95rem; justify-content: center;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In to Tracker
+                </button>
+            </form>
         </div>
     </div>
 

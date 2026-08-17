@@ -11,6 +11,8 @@ from sqlalchemy import text, func
 
 from database import engine, Base, get_db
 import models
+import auth
+from fastapi.security import OAuth2PasswordBearer
 
 app = FastAPI(
     title="Machinecraft Jacquard Production & Inventory API",
@@ -38,10 +40,22 @@ async def add_security_headers(request, call_next):
     return response
 
 
-# Automatically seed default operators and boards if tables are empty
+# Automatically seed default operators, boards, and admin user if tables are empty
 def seed_default_data():
     try:
         db = next(get_db())
+        if db.query(models.User).count() == 0:
+            admin_user = models.User(
+                username="admin",
+                email="admin@machinecraft.com",
+                hashed_password=auth.get_password_hash("admin123"),
+                role="admin",
+                is_active=True
+            )
+            db.add(admin_user)
+            db.commit()
+            print("👤 Default admin user created (username: admin, password: admin123)")
+
         if db.query(models.Operator).count() == 0:
             default_operators = [
                 models.Operator(name="DilliBabu", email="dillibabu@machinecraft.com", is_active=True),
@@ -84,6 +98,17 @@ def read_root():
         "health": "/health"
     }
 
+@app.get("/health", tags=["Health"])
+def health_check(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Database connection error: {str(e)}"
+        )
+
 @app.get("/dashboard", tags=["Dashboard"])
 def read_dashboard():
     index_file = os.path.join(static_dir, "index.html")
@@ -106,16 +131,90 @@ def read_testing_pwa():
     raise HTTPException(status_code=404, detail="Testing PWA UI not found")
 
 
-@app.get("/health", tags=["Health"])
-def health_check(db: Session = Depends(get_db)):
-    try:
-        db.execute(text("SELECT 1"))
-        return {"status": "ok", "database": "connected"}
-    except Exception as e:
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+def get_current_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> Optional[models.User]:
+    if not token:
+        return None
+    payload = auth.decode_token(token)
+    if not payload or "sub" not in payload:
+        return None
+    username = payload["sub"]
+    user = db.query(models.User).filter(models.User.username == username, models.User.is_active == True).first()
+    return user
+
+def require_user(user: Optional[models.User] = Depends(get_current_user)) -> models.User:
+    if not user:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Database connection error: {str(e)}"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Please log in.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
+    return user
+
+
+# ==========================================
+# Authentication Endpoints
+# ==========================================
+
+@app.post("/api/auth/login", response_model=models.TokenResponse, tags=["Authentication"])
+def login(payload: models.LoginRequest, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.username == payload.username.strip()).first()
+    if not user or not auth.verify_password(payload.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is disabled")
+
+    access_token = auth.create_access_token(data={"sub": user.username, "role": user.role})
+    return models.TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=models.UserResponse.model_validate(user)
+    )
+
+@app.get("/api/auth/me", response_model=models.UserResponse, tags=["Authentication"])
+def get_me(current_user: models.User = Depends(require_user)):
+    return models.UserResponse.model_validate(current_user)
+
+@app.get("/api/auth/users", response_model=List[models.UserResponse], tags=["Authentication"])
+def get_users(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_user)
+):
+    return db.query(models.User).order_by(models.User.username.asc()).all()
+
+@app.post("/api/auth/users", response_model=models.UserResponse, status_code=status.HTTP_201_CREATED, tags=["Authentication"])
+def create_user(
+    payload: models.UserCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can create new user accounts")
+    
+    existing = db.query(models.User).filter(models.User.username == payload.username.strip()).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Username '{payload.username}' already exists")
+    
+    new_user = models.User(
+        username=payload.username.strip(),
+        email=payload.email.strip() if payload.email else None,
+        hashed_password=auth.get_password_hash(payload.password),
+        role=payload.role or "operator",
+        operator_id=payload.operator_id,
+        is_active=True
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return models.UserResponse.model_validate(new_user)
 
 
 # ==========================================

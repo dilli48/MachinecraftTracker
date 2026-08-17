@@ -7,9 +7,111 @@ const app = {
     testReports: [],
     searchQuery: '',
     editingPartNumber: null,
+    authToken: localStorage.getItem('machinecraft_auth_token') || '',
+    authUser: JSON.parse(localStorage.getItem('machinecraft_auth_user') || 'null'),
 
-    init() {
-        this.refreshData();
+    async init() {
+        const isAuth = await this.checkAuth();
+        if (isAuth || this.authToken) {
+            this.refreshData();
+        }
+    },
+
+    async authFetch(url, options = {}) {
+        options.headers = options.headers || {};
+        if (this.authToken) {
+            options.headers['Authorization'] = `Bearer ${this.authToken}`;
+        }
+        const res = await fetch(url, options);
+        if (res.status === 401 && !url.includes('/api/auth/login')) {
+            this.authToken = '';
+            this.authUser = null;
+            localStorage.removeItem('machinecraft_auth_token');
+            localStorage.removeItem('machinecraft_auth_user');
+            this.showLoginModal();
+        }
+        return res;
+    },
+
+    async checkAuth() {
+        if (!this.authToken) {
+            this.showLoginModal();
+            return false;
+        }
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${this.authToken}` }
+            });
+            if (res.ok) {
+                this.authUser = await res.json();
+                localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.renderUserProfile();
+                this.closeModal('auth-login-modal');
+                return true;
+            } else if (res.status === 401) {
+                this.logout();
+                return false;
+            }
+            return true;
+        } catch (e) {
+            console.warn('Auth check network warning:', e);
+            return true;
+        }
+    },
+
+    showLoginModal() {
+        const modal = document.getElementById('auth-login-modal');
+        if (modal) modal.classList.add('active');
+    },
+
+    async handleLogin(event) {
+        event.preventDefault();
+        const username = document.getElementById('login_username').value.trim();
+        const password = document.getElementById('login_password').value;
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                this.authToken = data.access_token;
+                this.authUser = data.user;
+                localStorage.setItem('machinecraft_auth_token', this.authToken);
+                localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.showToast(`Welcome, ${this.authUser.username}!`, 'success');
+                this.closeModal('auth-login-modal');
+                this.renderUserProfile();
+                this.refreshData();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Invalid username or password', 'error');
+            }
+        } catch (e) {
+            this.showToast('Login error: ' + e.message, 'error');
+        }
+    },
+
+    renderUserProfile() {
+        const badge = document.getElementById('user-profile-badge');
+        const nameSpan = document.getElementById('user-display-name');
+        if (badge && nameSpan && this.authUser) {
+            nameSpan.innerText = `${this.authUser.username} (${this.authUser.role.toUpperCase()})`;
+            badge.style.display = 'flex';
+        }
+    },
+
+    logout() {
+        this.authToken = '';
+        this.authUser = null;
+        localStorage.removeItem('machinecraft_auth_token');
+        localStorage.removeItem('machinecraft_auth_user');
+        const badge = document.getElementById('user-profile-badge');
+        if (badge) badge.style.display = 'none';
+        this.showLoginModal();
+        this.showToast('Logged out.', 'success');
     },
 
     async refreshData() {

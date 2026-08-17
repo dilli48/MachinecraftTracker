@@ -183,6 +183,36 @@
         <div class="scanner-footer">Position reel barcode in camera view</div>
     </div>
 
+    <!-- Persistent Login Modal for Operator PWA -->
+    <div class="scanner-modal" id="auth-login-modal" style="background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 1.25rem;">
+        <div style="width: 100%; max-width: 400px; background: #1e293b; border-radius: 16px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+            <div style="text-align: center; margin-bottom: 1.25rem;">
+                <div style="font-size: 2.5rem; color: #6366f1; margin-bottom: 0.5rem;"><i class="fa-solid fa-user-lock"></i></div>
+                <div style="font-family: var(--font-head); font-size: 1.3rem; font-weight: 700; color: #fff;">Operator App Login</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">Sign in once to keep device active</div>
+            </div>
+            <form id="auth-login-form" onsubmit="app.handleLogin(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="login_username" style="font-size: 0.85rem; color: var(--text-secondary);">Username *</label>
+                    <input type="text" id="login_username" class="input-mobile" required placeholder="Username (e.g. admin)">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="login_password" style="font-size: 0.85rem; color: var(--text-secondary);">Password *</label>
+                    <input type="password" id="login_password" class="input-mobile" required placeholder="Password">
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; font-size: 0.8rem; color: var(--text-secondary);">
+                    <label style="display: flex; align-items: center; gap: 0.4rem;">
+                        <input type="checkbox" id="login_remember" checked style="accent-color: #6366f1;"> Stay Logged In
+                    </label>
+                    <span>Default: admin / admin123</span>
+                </div>
+                <button type="submit" class="btn-submit-giant" style="margin-top: 0;">
+                    <i class="fa-solid fa-right-to-bracket"></i> SIGN IN
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Banner -->
     <div id="toast-container"></div>
 

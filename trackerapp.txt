@@ -123,3 +123,16 @@ Seco Board QA Test
   "MultiFileSelectOption":"1",
   "Remarks":"Any comments by testing engineer"	
 }
+
+postgresql://neondb_owner:npg_92CMjHOiSlyd@ep-rough-band-ay2kapu7.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require
+
+
+OVH CLoud
+ssh login with command 	ssh ubuntu@51.79.250.6
+and password	:	2008@Batch
+
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBdJHIdxCPrZ5kLtd4co6RZHvE6dhPQvmJdeF7xT2GAI dilli.image@gmail.com 
+
+cd ~/MachinecraftTracker
+git pull origin main
+./deploy_vps_setup.sh

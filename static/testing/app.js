@@ -3,16 +3,111 @@ const app = {
     boardsList: [],
     reportsList: [],
     underTestList: [],
+    authToken: localStorage.getItem('machinecraft_auth_token') || '',
+    authUser: JSON.parse(localStorage.getItem('machinecraft_auth_user') || 'null'),
 
     async init() {
         this.registerServiceWorker();
-        await Promise.all([
-            this.fetchOperators(),
-            this.fetchBoards(),
-            this.fetchReports(),
-            this.fetchUnderTestBoards()
-        ]);
-        this.loadTestTemplate();
+        const isAuth = await this.checkAuth();
+        if (isAuth || this.authToken) {
+            await Promise.all([
+                this.fetchOperators(),
+                this.fetchBoards(),
+                this.fetchReports(),
+                this.fetchUnderTestBoards()
+            ]);
+            this.loadTestTemplate();
+        }
+    },
+
+    async authFetch(url, options = {}) {
+        options.headers = options.headers || {};
+        if (this.authToken) {
+            options.headers['Authorization'] = `Bearer ${this.authToken}`;
+        }
+        const res = await fetch(url, options);
+        if (res.status === 401 && !url.includes('/api/auth/login')) {
+            this.authToken = '';
+            this.authUser = null;
+            localStorage.removeItem('machinecraft_auth_token');
+            localStorage.removeItem('machinecraft_auth_user');
+            this.showLoginModal();
+        }
+        return res;
+    },
+
+    async checkAuth() {
+        if (!this.authToken) {
+            this.showLoginModal();
+            return false;
+        }
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${this.authToken}` }
+            });
+            if (res.ok) {
+                this.authUser = await res.json();
+                localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.closeLoginModal();
+                return true;
+            } else if (res.status === 401) {
+                this.authToken = '';
+                this.authUser = null;
+                localStorage.removeItem('machinecraft_auth_token');
+                localStorage.removeItem('machinecraft_auth_user');
+                this.showLoginModal();
+                return false;
+            }
+            return true;
+        } catch (e) {
+            console.warn('Testing PWA auth check warning:', e);
+            return true;
+        }
+    },
+
+    showLoginModal() {
+        const modal = document.getElementById('auth-login-modal');
+        if (modal) modal.style.display = 'flex';
+    },
+
+    closeLoginModal() {
+        const modal = document.getElementById('auth-login-modal');
+        if (modal) modal.style.display = 'none';
+    },
+
+    async handleLogin(event) {
+        event.preventDefault();
+        const username = document.getElementById('login_username').value.trim();
+        const password = document.getElementById('login_password').value;
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                this.authToken = data.access_token;
+                this.authUser = data.user;
+                localStorage.setItem('machinecraft_auth_token', this.authToken);
+                localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.showToast(`Logged in as ${this.authUser.username}`, 'success');
+                this.closeLoginModal();
+                await Promise.all([
+                    this.fetchOperators(),
+                    this.fetchBoards(),
+                    this.fetchReports(),
+                    this.fetchUnderTestBoards()
+                ]);
+                this.loadTestTemplate();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Invalid credentials', 'danger');
+            }
+        } catch (e) {
+            this.showToast('Login error: ' + e.message, 'danger');
+        }
     },
 
     registerServiceWorker() {

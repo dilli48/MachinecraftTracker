@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Any
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, func, Index
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, func, Index, JSON
 from sqlalchemy.orm import relationship
 
 from pydantic import BaseModel, Field, ConfigDict
@@ -32,6 +31,21 @@ class Operator(Base):
     email = Column(String(150), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(100), unique=True, nullable=False, index=True)
+    email = Column(String(150), unique=True, nullable=True)
+    hashed_password = Column(String(255), nullable=False)
+    role = Column(String(50), nullable=False, default="operator")
+    operator_id = Column(Integer, ForeignKey("operators.id", ondelete="SET NULL"), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    operator = relationship("Operator", lazy="joined")
 
 
 class Board(Base):
@@ -85,7 +99,7 @@ class TestReport(Base):
     operator_id = Column(Integer, ForeignKey("operators.id", ondelete="SET NULL"), nullable=True)
     test_timestamp = Column(DateTime(timezone=True), server_default=func.now())
     overall_status = Column(String(20), nullable=False, default="PASS")
-    test_data = Column(JSONB, nullable=False)
+    test_data = Column(JSON, nullable=False)
     remarks = Column(Text, nullable=True)
 
     # Relationships
@@ -234,4 +248,33 @@ class TestReportResponse(BaseModel):
     remarks: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# User Schemas
+class UserCreate(BaseModel):
+    username: str = Field(..., description="Unique username")
+    email: Optional[str] = Field(None, description="Optional email address")
+    password: str = Field(..., min_length=4, description="Password")
+    role: Optional[str] = Field("operator", description="Role: admin, operator, or tester")
+    operator_id: Optional[int] = Field(None, description="Link to Operator staff ID")
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: Optional[str] = None
+    role: str
+    operator_id: Optional[int] = None
+    is_active: bool
+    created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
 
