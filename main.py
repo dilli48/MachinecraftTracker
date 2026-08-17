@@ -129,6 +129,7 @@ def health_check(db: Session = Depends(get_db)):
         )
 
 @app.get("/dashboard", tags=["Dashboard"])
+@app.get("/tracker", tags=["Dashboard"])
 def read_dashboard():
     index_file = os.path.join(static_dir, "index.html")
     if os.path.exists(index_file):
