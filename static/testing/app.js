@@ -191,6 +191,8 @@ const app = {
         const testType = document.getElementById('modal_test_type').value;
         let html = '';
 
+        const getChk = (val) => (String(val) === '1' || val === true);
+
         if (testType === '8_HOURS_ON_OFF') {
             const onTime = existingData.on_time || "09:00:00";
             const offTime = existingData.off_time || "17:00:00";
@@ -212,72 +214,276 @@ const app = {
                     <input type="number" id="param_cycle_count" class="input-mobile" value="${cycleCount}" min="0" required>
                 </div>
             `;
-        } else if (testType === 'SECO_BOARD_QA') {
-            const fw = existingData.firmware_version || "v2.1.4";
-            const can = existingData.can_bus_communication || "OK";
-            const spi = existingData.spi_flash_test || "PASS";
-            const v33 = existingData.voltage_3v3 !== undefined ? existingData.voltage_3v3 : 3.31;
-            const v50 = existingData.voltage_5v !== undefined ? existingData.voltage_5v : 5.02;
+        } else if (testType === 'DISPLAY_UNIT_QA') {
+            const pcb = existingData["PCB Short Test"] || {};
+            const pcbVolt = pcb["Voltage"] || "12.5V";
+            const pcbCurr = pcb["Current"] || "0.100A";
+
+            const swVer = existingData["SW Ver"] || "2M.6";
+            const pwSet = existingData["P/WSet"] !== undefined ? existingData["P/WSet"] : "";
+            const noCards = existingData["No.OfCards"] || "12";
+            const hooksPos = existingData["HooksPosition"] || "MS4";
+
+            const pendrive = getChk(existingData["Pendrive"] !== undefined ? existingData["Pendrive"] : "0");
+            const cpy11 = getChk(existingData["Cpy1/1"] !== undefined ? existingData["Cpy1/1"] : "0");
+            const memCard = getChk(existingData["MemCard"] !== undefined ? existingData["MemCard"] : "0");
+            const designView = getChk(existingData["Design View"] !== undefined ? existingData["Design View"] : "0");
+            const del11 = getChk(existingData["Delete1/1"] !== undefined ? existingData["Delete1/1"] : "0");
+            const delAll = getChk(existingData["DeleteAll"] !== undefined ? existingData["DeleteAll"] : "0");
+
+            const tp = existingData["TestPattern"] || {};
+            const tpAllDown = getChk(tp["AllDown"] !== undefined ? tp["AllDown"] : "0");
+            const tpAllUp = getChk(tp["ALLUp"] !== undefined ? tp["ALLUp"] : "0");
+            const tp1By1 = getChk(tp["1By1"] !== undefined ? tp["1By1"] : "0");
+            const tp2By2 = getChk(tp["2By2"] !== undefined ? tp["2By2"] : "0");
+            const tpRbyR = getChk(tp["RbyR"] !== undefined ? tp["RbyR"] : "0");
+
+            const body = existingData["BodyFile"] || {};
+            const bodyInc = getChk(body["Pick Inc"] !== undefined ? body["Pick Inc"] : "0");
+            const bodyDec = getChk(body["Pick Dec"] !== undefined ? body["Pick Dec"] : "0");
+
+            const border = existingData["BorderFile"] || {};
+            const borderInc = getChk(border["Pick Inc"] !== undefined ? border["Pick Inc"] : "0");
+            const borderDec = getChk(border["Pick Dec"] !== undefined ? border["Pick Dec"] : "0");
+
+            const fingerSel = existingData["FingerSelection"] || "16";
+            const fingerWork = getChk(existingData["FingerWorking"] !== undefined ? existingData["FingerWorking"] : "0");
+            const connSwap = getChk(existingData["ConnectorSwap"] !== undefined ? existingData["ConnectorSwap"] : "0");
+
+            const sensor = existingData["SensorType"] || {};
+            const sensorSingle = getChk(sensor["Single"] !== undefined ? sensor["Single"] : "0");
+            const sensorDouble = getChk(sensor["Double"] !== undefined ? sensor["Double"] : "0");
+
+            const rawMF = existingData["MultiFile"] !== undefined ? existingData["MultiFile"] : existingData["MultiFileSelectOption"];
+            const multiFile = getChk(rawMF !== undefined ? rawMF : "0");
+            const remarks = existingData["Remarks"] !== undefined ? existingData["Remarks"] : "Any comments by testing engineer";
 
             html = `
-                <div class="form-group">
-                    <label for="param_firmware_version">Firmware Version</label>
-                    <input type="text" id="param_firmware_version" class="input-mobile" value="${this.escapeHtml(fw)}">
-                </div>
-                <div class="row-2col">
-                    <div class="form-group">
-                        <label for="param_can_bus">CAN Bus</label>
-                        <select id="param_can_bus" class="input-mobile">
-                            <option value="OK" ${can === 'OK' ? 'selected' : ''}>OK 🟢</option>
-                            <option value="FAIL" ${can === 'FAIL' ? 'selected' : ''}>FAIL 🔴</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="param_spi_flash">SPI Flash</label>
-                        <select id="param_spi_flash" class="input-mobile">
-                            <option value="PASS" ${spi === 'PASS' ? 'selected' : ''}>PASS 🟢</option>
-                            <option value="FAIL" ${spi === 'FAIL' ? 'selected' : ''}>FAIL 🔴</option>
-                        </select>
+                <!-- PCB Short Test Section -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fa-solid fa-bolt"></i> PCB Short Test</div>
+                    <div class="row-2col">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="param_pcb_voltage">Voltage</label>
+                            <input type="text" id="param_pcb_voltage" class="input-mobile" value="${this.escapeHtml(pcbVolt)}">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="param_pcb_current">Current</label>
+                            <input type="text" id="param_pcb_current" class="input-mobile" value="${this.escapeHtml(pcbCurr)}">
+                        </div>
                     </div>
                 </div>
+
+                <!-- General Display Info -->
                 <div class="row-2col">
                     <div class="form-group">
-                        <label for="param_voltage_3v3">Voltage 3.3V</label>
-                        <input type="number" step="0.01" id="param_voltage_3v3" class="input-mobile" value="${v33}">
+                        <label for="param_sw_ver">SW Ver</label>
+                        <input type="text" id="param_sw_ver" class="input-mobile" value="${this.escapeHtml(swVer)}">
                     </div>
                     <div class="form-group">
-                        <label for="param_voltage_5v">Voltage 5.0V</label>
-                        <input type="number" step="0.01" id="param_voltage_5v" class="input-mobile" value="${v50}">
+                        <label for="param_pw_set">P/WSet</label>
+                        <input type="text" id="param_pw_set" class="input-mobile" value="${this.escapeHtml(pwSet)}">
                     </div>
+                </div>
+
+                <div class="row-2col">
+                    <div class="form-group">
+                        <label for="param_no_cards">No.OfCards</label>
+                        <input type="text" id="param_no_cards" class="input-mobile" value="${this.escapeHtml(noCards)}">
+                    </div>
+                    <div class="form-group">
+                        <label for="param_hooks_pos">HooksPosition</label>
+                        <input type="text" id="param_hooks_pos" class="input-mobile" value="${this.escapeHtml(hooksPos)}">
+                    </div>
+                </div>
+
+                <!-- Features & Functions Checkboxes -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fa-solid fa-sliders"></i> Features & Functions</div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-card"><input type="checkbox" id="param_pendrive" ${pendrive ? 'checked' : ''}> Pendrive</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_cpy11" ${cpy11 ? 'checked' : ''}> Cpy1/1</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_mem_card" ${memCard ? 'checked' : ''}> MemCard</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_design_view" ${designView ? 'checked' : ''}> Design View</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_del11" ${del11 ? 'checked' : ''}> Delete1/1</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_del_all" ${delAll ? 'checked' : ''}> DeleteAll</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_finger_working" ${fingerWork ? 'checked' : ''}> FingerWorking</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_conn_swap" ${connSwap ? 'checked' : ''}> ConnectorSwap</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_multifile_opt" ${multiFile ? 'checked' : ''}> MultiFile</label>
+                    </div>
+                </div>
+
+                <!-- Test Pattern Checkboxes -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fa-solid fa-border-all"></i> Test Pattern</div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_alldown" ${tpAllDown ? 'checked' : ''}> AllDown</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_allup" ${tpAllUp ? 'checked' : ''}> ALLUp</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_1by1" ${tp1By1 ? 'checked' : ''}> 1By1</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_2by2" ${tp2By2 ? 'checked' : ''}> 2By2</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_rbyr" ${tpRbyR ? 'checked' : ''}> RbyR</label>
+                    </div>
+                </div>
+
+                <!-- File Adjustments -->
+                <div class="row-2col">
+                    <div class="form-section" style="margin-bottom:0;">
+                        <div class="form-section-title">BodyFile</div>
+                        <div class="checkbox-grid" style="grid-template-columns: 1fr;">
+                            <label class="checkbox-card"><input type="checkbox" id="param_body_inc" ${bodyInc ? 'checked' : ''}> Pick Inc</label>
+                            <label class="checkbox-card"><input type="checkbox" id="param_body_dec" ${bodyDec ? 'checked' : ''}> Pick Dec</label>
+                        </div>
+                    </div>
+                    <div class="form-section" style="margin-bottom:0;">
+                        <div class="form-section-title">BorderFile</div>
+                        <div class="checkbox-grid" style="grid-template-columns: 1fr;">
+                            <label class="checkbox-card"><input type="checkbox" id="param_border_inc" ${borderInc ? 'checked' : ''}> Pick Inc</label>
+                            <label class="checkbox-card"><input type="checkbox" id="param_border_dec" ${borderDec ? 'checked' : ''}> Pick Dec</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" style="margin-top: 1rem;">
+                    <div class="form-section-title">Finger & Sensors</div>
+                    <div class="form-group">
+                        <label for="param_finger_sel">FingerSelection</label>
+                        <input type="text" id="param_finger_sel" class="input-mobile" value="${this.escapeHtml(fingerSel)}">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>SensorType</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-card"><input type="checkbox" id="param_sensor_single" ${sensorSingle ? 'checked' : ''}> Single</label>
+                            <label class="checkbox-card"><input type="checkbox" id="param_sensor_double" ${sensorDouble ? 'checked' : ''}> Double</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="param_qa_remarks">Remarks</label>
+                    <input type="text" id="param_qa_remarks" class="input-mobile" value="${this.escapeHtml(remarks)}">
                 </div>
             `;
-        } else if (testType === 'DISPLAY_UNIT_QA') {
-            const res = existingData.display_resolution || "1024x600";
-            const calib = existingData.touch_screen_calibration || "PASSED";
-            const nits = existingData.backlight_brightness_nits !== undefined ? existingData.backlight_brightness_nits : 450;
-            const defects = existingData.pixel_defect_count !== undefined ? existingData.pixel_defect_count : 0;
+        } else if (testType === 'SECO_BOARD_QA') {
+            const pcb = existingData["PCB Short Test"] || {};
+            const pcbVolt = pcb["Voltage"] || "12.5V";
+            const pcbCurr = pcb["Current"] || "0.100A";
+
+            const hwVer = existingData["HW Ver"] || "2M.6";
+
+            const pf = existingData["ProgramFlash"] || {};
+            const flashTest = getChk(pf["TestCode"] !== undefined ? pf["TestCode"] : "0");
+            const flashMain = getChk(pf["MainCode"] !== undefined ? pf["MainCode"] : "0");
+
+            const tp = existingData["TestPattern"] || {};
+            const tpAllDown = getChk(tp["AllDown"] !== undefined ? tp["AllDown"] : "0");
+            const tpAllUp = getChk(tp["ALLUp"] !== undefined ? tp["ALLUp"] : "0");
+            const tp1By1 = getChk(tp["1By1"] !== undefined ? tp["1By1"] : "0");
+            const tp2By2 = getChk(tp["2By2"] !== undefined ? tp["2By2"] : "0");
+            const tpRbyR = getChk(tp["RbyR"] !== undefined ? tp["RbyR"] : "0");
+
+            const body = existingData["BodyFile"] || {};
+            const bodyInc = getChk(body["Pick Inc"] !== undefined ? body["Pick Inc"] : "0");
+            const bodyDec = getChk(body["Pick Dec"] !== undefined ? body["Pick Dec"] : "0");
+
+            const border = existingData["BorderFile"] || {};
+            const borderInc = getChk(border["Pick Inc"] !== undefined ? border["Pick Inc"] : "0");
+            const borderDec = getChk(border["Pick Dec"] !== undefined ? border["Pick Dec"] : "0");
+
+            const fingerSel = existingData["FingerSelection"] || "16";
+            const fingerWork = getChk(existingData["FingerWorking"] !== undefined ? existingData["FingerWorking"] : "0");
+            const connSwap = getChk(existingData["ConnectorSwap"] !== undefined ? existingData["ConnectorSwap"] : "0");
+
+            const sensor = existingData["SensorType"] || {};
+            const sensorSingle = getChk(sensor["Single"] !== undefined ? sensor["Single"] : "0");
+            const sensorDouble = getChk(sensor["Double"] !== undefined ? sensor["Double"] : "0");
+
+            const rawMF = existingData["MultiFile"] !== undefined ? existingData["MultiFile"] : existingData["MultiFileSelectOption"];
+            const multiFile = getChk(rawMF !== undefined ? rawMF : "0");
+            const remarks = existingData["Remarks"] !== undefined ? existingData["Remarks"] : "Any comments by testing engineer";
 
             html = `
-                <div class="form-group">
-                    <label for="param_display_res">Display Resolution</label>
-                    <input type="text" id="param_display_res" class="input-mobile" value="${this.escapeHtml(res)}">
+                <!-- PCB Short Test Section -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fa-solid fa-bolt"></i> PCB Short Test</div>
+                    <div class="row-2col">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="param_pcb_voltage">Voltage</label>
+                            <input type="text" id="param_pcb_voltage" class="input-mobile" value="${this.escapeHtml(pcbVolt)}">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="param_pcb_current">Current</label>
+                            <input type="text" id="param_pcb_current" class="input-mobile" value="${this.escapeHtml(pcbCurr)}">
+                        </div>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="param_touch_calib">Touch Calibration</label>
-                    <select id="param_touch_calib" class="input-mobile">
-                        <option value="PASSED" ${calib === 'PASSED' ? 'selected' : ''}>PASSED 🟢</option>
-                        <option value="FAILED" ${calib === 'FAILED' ? 'selected' : ''}>FAILED 🔴</option>
-                    </select>
+                    <label for="param_hw_ver">HW Ver</label>
+                    <input type="text" id="param_hw_ver" class="input-mobile" value="${this.escapeHtml(hwVer)}">
                 </div>
+
+                <!-- ProgramFlash Section -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fa-solid fa-microchip"></i> ProgramFlash</div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-card"><input type="checkbox" id="param_flash_testcode" ${flashTest ? 'checked' : ''}> TestCode</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_flash_maincode" ${flashMain ? 'checked' : ''}> MainCode</label>
+                    </div>
+                </div>
+
+                <!-- Test Pattern Checkboxes -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="fa-solid fa-border-all"></i> Test Pattern</div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_alldown" ${tpAllDown ? 'checked' : ''}> AllDown</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_allup" ${tpAllUp ? 'checked' : ''}> ALLUp</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_1by1" ${tp1By1 ? 'checked' : ''}> 1By1</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_2by2" ${tp2By2 ? 'checked' : ''}> 2By2</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_tp_rbyr" ${tpRbyR ? 'checked' : ''}> RbyR</label>
+                    </div>
+                </div>
+
+                <!-- File Adjustments -->
                 <div class="row-2col">
-                    <div class="form-group">
-                        <label for="param_backlight_nits">Backlight (Nits)</label>
-                        <input type="number" id="param_backlight_nits" class="input-mobile" value="${nits}">
+                    <div class="form-section" style="margin-bottom:0;">
+                        <div class="form-section-title">BodyFile</div>
+                        <div class="checkbox-grid" style="grid-template-columns: 1fr;">
+                            <label class="checkbox-card"><input type="checkbox" id="param_body_inc" ${bodyInc ? 'checked' : ''}> Pick Inc</label>
+                            <label class="checkbox-card"><input type="checkbox" id="param_body_dec" ${bodyDec ? 'checked' : ''}> Pick Dec</label>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="param_pixel_defects">Pixel Defects</label>
-                        <input type="number" id="param_pixel_defects" class="input-mobile" value="${defects}">
+                    <div class="form-section" style="margin-bottom:0;">
+                        <div class="form-section-title">BorderFile</div>
+                        <div class="checkbox-grid" style="grid-template-columns: 1fr;">
+                            <label class="checkbox-card"><input type="checkbox" id="param_border_inc" ${borderInc ? 'checked' : ''}> Pick Inc</label>
+                            <label class="checkbox-card"><input type="checkbox" id="param_border_dec" ${borderDec ? 'checked' : ''}> Pick Dec</label>
+                        </div>
                     </div>
+                </div>
+
+                <div class="form-section" style="margin-top: 1rem;">
+                    <div class="form-section-title">Finger & Sensors</div>
+                    <div class="form-group">
+                        <label for="param_finger_sel">FingerSelection</label>
+                        <input type="text" id="param_finger_sel" class="input-mobile" value="${this.escapeHtml(fingerSel)}">
+                    </div>
+                    <div class="checkbox-grid" style="margin-bottom: 0.75rem;">
+                        <label class="checkbox-card"><input type="checkbox" id="param_finger_working" ${fingerWork ? 'checked' : ''}> FingerWorking</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_conn_swap" ${connSwap ? 'checked' : ''}> ConnectorSwap</label>
+                        <label class="checkbox-card"><input type="checkbox" id="param_multifile_opt" ${multiFile ? 'checked' : ''}> MultiFile</label>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>SensorType</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-card"><input type="checkbox" id="param_sensor_single" ${sensorSingle ? 'checked' : ''}> Single</label>
+                            <label class="checkbox-card"><input type="checkbox" id="param_sensor_double" ${sensorDouble ? 'checked' : ''}> Double</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="param_qa_remarks">Remarks</label>
+                    <input type="text" id="param_qa_remarks" class="input-mobile" value="${this.escapeHtml(remarks)}">
                 </div>
             `;
         } else {
@@ -301,26 +507,93 @@ const app = {
     collectModalTestData() {
         const testType = document.getElementById('modal_test_type').value;
 
+        const getVal = (id, defaultVal = "0") => {
+            const el = document.getElementById(id);
+            return el ? (el.checked ? "1" : "0") : defaultVal;
+        };
+
         if (testType === '8_HOURS_ON_OFF') {
             return {
                 on_time: document.getElementById('param_on_time')?.value.trim() || "09:00:00",
                 off_time: document.getElementById('param_off_time')?.value.trim() || "17:00:00",
                 cycle_count: parseInt(document.getElementById('param_cycle_count')?.value, 10) || 0
             };
-        } else if (testType === 'SECO_BOARD_QA') {
-            return {
-                firmware_version: document.getElementById('param_firmware_version')?.value.trim() || "v2.1.4",
-                can_bus_communication: document.getElementById('param_can_bus')?.value || "OK",
-                spi_flash_test: document.getElementById('param_spi_flash')?.value || "PASS",
-                voltage_3v3: parseFloat(document.getElementById('param_voltage_3v3')?.value) || 3.31,
-                voltage_5v: parseFloat(document.getElementById('param_voltage_5v')?.value) || 5.02
-            };
         } else if (testType === 'DISPLAY_UNIT_QA') {
             return {
-                display_resolution: document.getElementById('param_display_res')?.value.trim() || "1024x600",
-                touch_screen_calibration: document.getElementById('param_touch_calib')?.value || "PASSED",
-                backlight_brightness_nits: parseInt(document.getElementById('param_backlight_nits')?.value, 10) || 450,
-                pixel_defect_count: parseInt(document.getElementById('param_pixel_defects')?.value, 10) || 0
+                "PCB Short Test": { 
+                    "Voltage": document.getElementById('param_pcb_voltage')?.value.trim() || "12.5V",
+                    "Current": document.getElementById('param_pcb_current')?.value.trim() || "0.100A"
+                },
+                "SW Ver": document.getElementById('param_sw_ver')?.value.trim() || "2M.6",
+                "P/WSet": document.getElementById('param_pw_set')?.value.trim() || "",
+                "No.OfCards": document.getElementById('param_no_cards')?.value.trim() || "12",
+                "HooksPosition": document.getElementById('param_hooks_pos')?.value.trim() || "MS4",
+                "Pendrive": getVal('param_pendrive'),
+                "Cpy1/1": getVal('param_cpy11'),
+                "MemCard": getVal('param_mem_card'),
+                "Design View": getVal('param_design_view'),
+                "Delete1/1": getVal('param_del11'),
+                "DeleteAll": getVal('param_del_all'),
+                "TestPattern": {
+                    "AllDown": getVal('param_tp_alldown'),
+                    "ALLUp": getVal('param_tp_allup'),
+                    "1By1": getVal('param_tp_1by1'),
+                    "2By2": getVal('param_tp_2by2'),
+                    "RbyR": getVal('param_tp_rbyr')
+                },
+                "BodyFile": {
+                    "Pick Inc": getVal('param_body_inc'),
+                    "Pick Dec": getVal('param_body_dec')
+                },
+                "BorderFile": {
+                    "Pick Inc": getVal('param_border_inc'),
+                    "Pick Dec": getVal('param_border_dec')
+                },
+                "FingerSelection": document.getElementById('param_finger_sel')?.value.trim() || "16",
+                "FingerWorking": getVal('param_finger_working'),
+                "ConnectorSwap": getVal('param_conn_swap'),
+                "SensorType": {
+                    "Single": getVal('param_sensor_single'),
+                    "Double": getVal('param_sensor_double')
+                },
+                "MultiFile": getVal('param_multifile_opt'),
+                "Remarks": document.getElementById('param_qa_remarks')?.value.trim() || "Any comments by testing engineer"
+            };
+        } else if (testType === 'SECO_BOARD_QA') {
+            return {
+                "PCB Short Test": { 
+                    "Voltage": document.getElementById('param_pcb_voltage')?.value.trim() || "12.5V",
+                    "Current": document.getElementById('param_pcb_current')?.value.trim() || "0.100A"
+                },
+                "HW Ver": document.getElementById('param_hw_ver')?.value.trim() || "2M.6",
+                "ProgramFlash": {
+                    "TestCode": getVal('param_flash_testcode'),
+                    "MainCode": getVal('param_flash_maincode')
+                },
+                "TestPattern": {
+                    "AllDown": getVal('param_tp_alldown'),
+                    "ALLUp": getVal('param_tp_allup'),
+                    "1By1": getVal('param_tp_1by1'),
+                    "2By2": getVal('param_tp_2by2'),
+                    "RbyR": getVal('param_tp_rbyr')
+                },
+                "BodyFile": {
+                    "Pick Inc": getVal('param_body_inc'),
+                    "Pick Dec": getVal('param_body_dec')
+                },
+                "BorderFile": {
+                    "Pick Inc": getVal('param_border_inc'),
+                    "Pick Dec": getVal('param_border_dec')
+                },
+                "FingerSelection": document.getElementById('param_finger_sel')?.value.trim() || "16",
+                "FingerWorking": getVal('param_finger_working'),
+                "ConnectorSwap": getVal('param_conn_swap'),
+                "SensorType": {
+                    "Single": getVal('param_sensor_single'),
+                    "Double": getVal('param_sensor_double')
+                },
+                "MultiFile": getVal('param_multifile_opt'),
+                "Remarks": document.getElementById('param_qa_remarks')?.value.trim() || "Any comments by testing engineer"
             };
         }
         return {
@@ -336,20 +609,82 @@ const app = {
                 off_time: "17:00:00",
                 cycle_count: 120
             };
-        } else if (type === 'SECO_BOARD_QA') {
-            return {
-                firmware_version: "v2.1.4",
-                can_bus_communication: "OK",
-                spi_flash_test: "PASS",
-                voltage_3v3: 3.31,
-                voltage_5v: 5.02
-            };
         } else if (type === 'DISPLAY_UNIT_QA') {
             return {
-                display_resolution: "1024x600",
-                touch_screen_calibration: "PASSED",
-                backlight_brightness_nits: 450,
-                pixel_defect_count: 0
+                "PCB Short Test": { 
+                    "Voltage": "12.5V",
+                    "Current": "0.100A"
+                },
+                "SW Ver": "2M.6",
+                "P/WSet": "",
+                "No.OfCards": "12",
+                "HooksPosition": "MS4",
+                "Pendrive": "0",
+                "Cpy1/1": "0",
+                "MemCard": "0",
+                "Design View": "0",
+                "Delete1/1": "0",
+                "DeleteAll": "0",
+                "TestPattern": {
+                    "AllDown": "0",
+                    "ALLUp": "0",
+                    "1By1": "0",
+                    "2By2": "0",
+                    "RbyR": "0"
+                },
+                "BodyFile": {
+                    "Pick Inc": "0",
+                    "Pick Dec": "0"
+                },
+                "BorderFile": {
+                    "Pick Inc": "0",
+                    "Pick Dec": "0"
+                },
+                "FingerSelection": "16",
+                "FingerWorking": "0",
+                "ConnectorSwap": "0",
+                "SensorType": {
+                    "Single": "0",
+                    "Double": "0"
+                },
+                "MultiFile": "0",
+                "Remarks": "Any comments by testing engineer"
+            };
+        } else if (type === 'SECO_BOARD_QA') {
+            return {
+                "PCB Short Test": { 
+                    "Voltage": "12.5V",
+                    "Current": "0.100A"
+                },
+                "HW Ver": "2M.6",
+                "ProgramFlash": {
+                    "TestCode": "0",
+                    "MainCode": "0"
+                },
+                "TestPattern": {
+                    "AllDown": "0",
+                    "ALLUp": "0",
+                    "1By1": "0",
+                    "2By2": "0",
+                    "RbyR": "0"
+                },
+                "BodyFile": {
+                    "Pick Inc": "0",
+                    "Pick Dec": "0"
+                },
+                "BorderFile": {
+                    "Pick Inc": "0",
+                    "Pick Dec": "0"
+                },
+                "FingerSelection": "16",
+                "FingerWorking": "0",
+                "ConnectorSwap": "0",
+                "SensorType": {
+                    "Single": "0",
+                    "Double": "0"
+                },
+                "MultiFile": "0",
+                "Remarks": "Any comments by testing engineer"
             };
         }
         return {
@@ -357,6 +692,8 @@ const app = {
             custom_value_2: 100
         };
     },
+
+
 
     async openUpdateOutcomeModal(serialNumber, productName) {
         document.getElementById('modal_serial_display').value = serialNumber;

@@ -1,0 +1,41 @@
+name: Deploy to OVHcloud VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest httpx
+
+      - name: Run API Tests
+        run: |
+          python -m unittest test_api.py
+
+      - name: Deploy to OVH VPS via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.VPS_USERNAME }}/MachinecraftTracker || cd ~/MachinecraftTracker
+            git pull origin main
+            docker compose down
+            docker compose up -d --build
+            docker image prune -f

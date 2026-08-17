@@ -31,7 +31,10 @@ Worker Mobile PWA: http://localhost:8000/operator
 Interactive API Docs: http://localhost:8000/docs
 
 App Component	Local Network URL	Device Target
-Worker Mobile PWA	http://192.168.1.100:8000/operator	Mobile Phones / Android devices on factory floor
+Worker Mobile PWA	http://192.168.1.100:8000/operator	Mobile Phones / Android devices on factory
+floor
+			http://192.168.1.100:8000/testing
+			
 Admin Web Dashboard	http://192.168.1.100:8000/	Desktop / PC browsers
 API Documentation	http://192.168.1.100:8000/docs	API Swagger UI
 
@@ -41,3 +44,84 @@ API Documentation	http://192.168.1.100:8000/docs	API Swagger UI
 
 /home/machinecraft/MachineCraft/MachinecraftTracker
 ./stop_server.sh
+
+Display Unit QA Test
+{
+  "PCB Short Test":{ 
+	Voltage:12.5V
+	Current:0.100A
+	},
+  "SW Ver":"2M.6",
+  "P/WSet":,
+  "No.OfCards":"12",
+  "HooksPosition":"MS4",
+  "Pendrive":"1",
+  "Cpy1/1":"1",
+  "MemCard":"1",
+  "Design View":"1",
+  "Delete1/1":"1",
+  "DeleteAll":"1",
+  "TestPattern":{
+  	"AllDown":"1",
+  	"ALLUp":"1",
+  	"1By1":"1:,
+  	"2By2":"1",
+  	"RbyR":"1",
+  	},
+  "BodyFile":{
+  	"Pick Inc":"1",
+  	"Pick Dec":"1"
+  	},
+  "BorderFile":{
+  	"Pick Inc":"1",
+  	"Pick Dec":"1"
+  	},
+  "FingerSelection":"16",
+  "FingerWorking":"1",
+  "ConnectorSwap":"1",
+  "SensorType":{
+  	"Single":"1",
+  	"Double":"1"
+  	},
+  "MultiFileSelectOption":"1",
+  "Remarks":"Any comments by testing engineer"	
+}
+
+Seco Board QA Test
+{
+  "PCB Short Test":{ 
+	Voltage:12.5V
+	Current:0.100A
+	},
+  "HW Ver":"2M.6",
+  "ProgramFlash":{
+  	"TestCode":"1",
+  	"MainCode":"1"
+  	},
+  "TestPattern":{
+  	"AllDown":"1",
+  	"ALLUp":"1",
+  	"1By1":"1:,
+  	"2By2":"1",
+  	"RbyR":"1",
+  	},
+  "BodyFile":{
+  	"Pick Inc":"1",
+  	"Pick Dec":"1"
+  	},
+  "BorderFile":{
+  	"Pick Inc":"1",
+  	"Pick Dec":"1"
+  	},
+  "FingerSelection":"16",
+  "FingerWorking":"1",
+  "ConnectorSwap":"1",
+  "SensorType":{
+  	"Single":"1",
+  	"Double":"1"
+  	},
+  "MultiFileSelectOption":"1",
+  "Remarks":"Any comments by testing engineer"	
+}
+
+postgresql://neondb_owner:npg_92CMjHOiSlyd@ep-rough-band-ay2kapu7.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require

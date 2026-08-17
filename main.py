@@ -12,28 +12,36 @@ from sqlalchemy import text, func
 from database import engine, Base, get_db
 import models
 
-# Create database tables if they do not exist
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title="Machinecraft Jacquard Production & Inventory API",
     description="API for component inventory tracking, operators, product boards, and production stage tracking",
     version="2.0.0",
 )
 
-# Enable CORS for web dashboards and mobile clients
+# Security & CORS configuration
+raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
+allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    return response
+
+
 # Automatically seed default operators and boards if tables are empty
 def seed_default_data():
-    db = next(get_db())
     try:
+        db = next(get_db())
         if db.query(models.Operator).count() == 0:
             default_operators = [
                 models.Operator(name="DilliBabu", email="dillibabu@machinecraft.com", is_active=True),
@@ -50,8 +58,15 @@ def seed_default_data():
     except Exception as e:
         print("Seed data check warning:", e)
 
+@app.on_event("startup")
+def startup_db_init():
+    try:
+        Base.metadata.create_all(bind=engine)
+        seed_default_data()
+        print("✅ Database tables verified and initial data seeded.")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not connect to database on startup: {e}")
 
-seed_default_data()
 
 # Serve static web dashboard and mobile PWA files
 static_dir = os.path.join(os.path.dirname(__file__), "static")

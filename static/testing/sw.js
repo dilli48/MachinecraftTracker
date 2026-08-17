@@ -1,4 +1,4 @@
-const CACHE_NAME = 'testing-pwa-v1';
+const CACHE_NAME = 'testing-pwa-v3';
 const ASSETS_TO_CACHE = [
     '/testing',
     '/static/testing/index.html',

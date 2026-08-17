@@ -424,3 +424,59 @@ label {
     gap: 0.75rem;
 }
 
+/* Dynamic Test Form Sections & Checkbox Grid */
+.form-section {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.form-section-title {
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.5rem;
+}
+
+.checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.checkbox-card:hover {
+    background: rgba(2, 132, 199, 0.15);
+    border-color: rgba(2, 132, 199, 0.4);
+}
+
+.checkbox-card input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+
