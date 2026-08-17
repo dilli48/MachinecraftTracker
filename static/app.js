@@ -493,6 +493,15 @@ const app = {
             `<option value="${o.id}">${this.escapeHtml(o.name)}</option>`
         ).join('');
 
+        if (this.authUser) {
+            if (this.authUser.operator_id) {
+                opSelect.value = this.authUser.operator_id;
+            } else if (this.authUser.username) {
+                const matchedOp = this.operators.find(o => o.name.toLowerCase() === this.authUser.username.toLowerCase());
+                if (matchedOp) opSelect.value = matchedOp.id;
+            }
+        }
+
         const lines = Array.from(new Set(this.boards.map(b => b.production_line_category || 'ALL CL Card')));
         const lineSelect = document.getElementById('log_production_line');
         lineSelect.innerHTML = lines.map(l => `<option value="${this.escapeHtml(l)}">${this.escapeHtml(l)}</option>`).join('');
@@ -914,6 +923,15 @@ const app = {
         const opSelect = document.getElementById('report_operator_id');
         const activeOps = this.operators.filter(o => o.is_active);
         opSelect.innerHTML = activeOps.map(o => `<option value="${o.id}">${this.escapeHtml(o.name)}</option>`).join('');
+
+        if (this.authUser) {
+            if (this.authUser.operator_id) {
+                opSelect.value = this.authUser.operator_id;
+            } else if (this.authUser.username) {
+                const matchedOp = this.operators.find(o => o.name.toLowerCase() === this.authUser.username.toLowerCase());
+                if (matchedOp) opSelect.value = matchedOp.id;
+            }
+        }
 
         document.getElementById('report_board_serial').value = '';
         if (document.getElementById('report_remarks')) document.getElementById('report_remarks').value = '';

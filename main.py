@@ -51,6 +51,7 @@ def seed_default_data():
                 legacy_admin.username = "mctracker"
                 legacy_admin.hashed_password = auth.get_password_hash("2008batch")
                 db.commit()
+                mctracker_user = legacy_admin
                 print("👤 Updated legacy admin user to (username: mctracker, password: 2008batch)")
             else:
                 mctracker_user = models.User(
@@ -68,12 +69,18 @@ def seed_default_data():
             db.commit()
             print("👤 Default admin user verified (username: mctracker, password: 2008batch)")
 
-        if db.query(models.Operator).count() == 0:
-            default_operators = [
-                models.Operator(name="DilliBabu", email="dillibabu@machinecraft.com", is_active=True),
-            ]
-            db.add_all(default_operators)
-            db.commit()
+        # Ensure all users have a linked Operator record
+        users = db.query(models.User).all()
+        for u in users:
+            if not u.operator_id:
+                op = db.query(models.Operator).filter(models.Operator.name == u.username).first()
+                if not op:
+                    op = models.Operator(name=u.username, email=u.email, is_active=True)
+                    db.add(op)
+                    db.commit()
+                    db.refresh(op)
+                u.operator_id = op.id
+                db.commit()
 
         if db.query(models.Board).count() == 0:
             default_boards = [
@@ -215,12 +222,22 @@ def create_user(
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Username '{payload.username}' already exists")
     
+    op_id = payload.operator_id
+    if not op_id:
+        existing_op = db.query(models.Operator).filter(models.Operator.name == payload.username.strip()).first()
+        if not existing_op:
+            existing_op = models.Operator(name=payload.username.strip(), email=payload.email.strip() if payload.email else None, is_active=True)
+            db.add(existing_op)
+            db.commit()
+            db.refresh(existing_op)
+        op_id = existing_op.id
+
     new_user = models.User(
         username=payload.username.strip(),
         email=payload.email.strip() if payload.email else None,
         hashed_password=auth.get_password_hash(payload.password),
         role=payload.role or "operator",
-        operator_id=payload.operator_id,
+        operator_id=op_id,
         is_active=True
     )
     db.add(new_user)

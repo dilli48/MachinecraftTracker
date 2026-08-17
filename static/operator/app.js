@@ -48,6 +48,7 @@ const app = {
             if (res.ok) {
                 this.authUser = await res.json();
                 localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.setupUserDisplay();
                 this.closeLoginModal();
                 return true;
             } else if (res.status === 401) {
@@ -92,6 +93,7 @@ const app = {
                 this.authUser = data.user;
                 localStorage.setItem('machinecraft_auth_token', this.authToken);
                 localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.setupUserDisplay();
                 this.showToast(`Logged in as ${this.authUser.username}`, 'success');
                 this.closeLoginModal();
                 await Promise.all([
@@ -137,14 +139,26 @@ const app = {
             const res = await this.authFetch('/api/operators?active_only=true');
             if (res.ok) {
                 this.operatorsList = await res.json();
-                const select = document.getElementById('assm_operator_id');
-                select.innerHTML = '<option value="" disabled selected>-- Select Your Name --</option>';
-                this.operatorsList.forEach(op => {
-                    select.innerHTML += `<option value="${op.id}">${this.escapeHtml(op.name)}</option>`;
-                });
+                this.setupUserDisplay();
             }
         } catch (e) {
             console.error('Error fetching operators:', e);
+        }
+    },
+
+    setupUserDisplay() {
+        const displayEl = document.getElementById('display_operator_user');
+        const hiddenEl = document.getElementById('assm_operator_id');
+        if (this.authUser) {
+            if (displayEl) displayEl.textContent = this.authUser.username;
+            if (hiddenEl) {
+                let opId = this.authUser.operator_id;
+                if (!opId && this.operatorsList) {
+                    const found = this.operatorsList.find(o => o.name.toLowerCase() === this.authUser.username.toLowerCase());
+                    if (found) opId = found.id;
+                }
+                hiddenEl.value = opId || this.authUser.id || 1;
+            }
         }
     },
 

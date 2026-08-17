@@ -53,10 +53,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="test_operator_id">Operator Staff *</label>
-                        <select id="test_operator_id" class="input-mobile" required>
-                            <option value="" disabled selected>-- Select Your Name --</option>
-                        </select>
+                        <label>Logged-in User Account</label>
+                        <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 0.75rem 1rem; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-user-circle" style="color: #0284c7; font-size: 1.1rem;"></i>
+                            <span id="display_testing_user">Loading User...</span>
+                        </div>
+                        <input type="hidden" id="test_operator_id" value="">
                     </div>
 
                     <div class="form-group">
@@ -151,10 +153,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="modal_operator_id">Operator Staff *</label>
-                    <select id="modal_operator_id" class="input-mobile" required>
-                        <!-- Populated dynamically -->
-                    </select>
+                    <label>Logged-in User Account</label>
+                    <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 0.75rem 1rem; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-user-circle" style="color: #0284c7; font-size: 1.1rem;"></i>
+                        <span id="display_modal_testing_user">Loading User...</span>
+                    </div>
+                    <input type="hidden" id="modal_operator_id" value="">
                 </div>
 
                 <div class="form-group">

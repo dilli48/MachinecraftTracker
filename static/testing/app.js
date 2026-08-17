@@ -48,6 +48,7 @@ const app = {
             if (res.ok) {
                 this.authUser = await res.json();
                 localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.setupUserDisplay();
                 this.closeLoginModal();
                 return true;
             } else if (res.status === 401) {
@@ -92,6 +93,7 @@ const app = {
                 this.authUser = data.user;
                 localStorage.setItem('machinecraft_auth_token', this.authToken);
                 localStorage.setItem('machinecraft_auth_user', JSON.stringify(this.authUser));
+                this.setupUserDisplay();
                 this.showToast(`Logged in as ${this.authUser.username}`, 'success');
                 this.closeLoginModal();
                 await Promise.all([
@@ -123,18 +125,31 @@ const app = {
             const res = await this.authFetch('/api/operators?active_only=true');
             if (res.ok) {
                 this.operatorsList = await res.json();
-                let optionsHtml = '<option value="" disabled selected>-- Select Your Name --</option>';
-                this.operatorsList.forEach(op => {
-                    optionsHtml += `<option value="${op.id}">${this.escapeHtml(op.name)}</option>`;
-                });
-                
-                const select1 = document.getElementById('test_operator_id');
-                const select2 = document.getElementById('modal_operator_id');
-                if (select1) select1.innerHTML = optionsHtml;
-                if (select2) select2.innerHTML = optionsHtml;
+                this.setupUserDisplay();
             }
         } catch (e) {
             console.error('Error fetching operators:', e);
+        }
+    },
+
+    setupUserDisplay() {
+        const display1 = document.getElementById('display_testing_user');
+        const display2 = document.getElementById('display_modal_testing_user');
+        const hidden1 = document.getElementById('test_operator_id');
+        const hidden2 = document.getElementById('modal_operator_id');
+
+        if (this.authUser) {
+            if (display1) display1.textContent = this.authUser.username;
+            if (display2) display2.textContent = this.authUser.username;
+
+            let opId = this.authUser.operator_id;
+            if (!opId && this.operatorsList) {
+                const found = this.operatorsList.find(o => o.name.toLowerCase() === this.authUser.username.toLowerCase());
+                if (found) opId = found.id;
+            }
+            const finalId = opId || this.authUser.id || 1;
+            if (hidden1) hidden1.value = finalId;
+            if (hidden2) hidden2.value = finalId;
         }
     },
 
