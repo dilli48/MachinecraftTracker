@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 from typing import List, Optional
 from datetime import datetime, date
 from fastapi import FastAPI, Depends, HTTPException, status, Query, Request
@@ -191,19 +192,36 @@ async def login(request: Request, db: Session = Depends(get_db)):
     username = None
     password = None
 
-    content_type = request.headers.get("content-type", "")
-    if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
-        form = await request.form()
-        username = form.get("username")
-        password = form.get("password")
-    else:
-        try:
-            body = await request.json()
-            if isinstance(body, dict):
-                username = body.get("username")
-                password = body.get("password")
-        except Exception:
-            pass
+    try:
+        body_bytes = await request.body()
+        content_type = request.headers.get("content-type", "")
+
+        if "x-www-form-urlencoded" in content_type:
+            parsed = urllib.parse.parse_qs(body_bytes.decode("utf-8", errors="ignore"))
+            if "username" in parsed:
+                username = parsed["username"][0]
+            if "password" in parsed:
+                password = parsed["password"][0]
+        else:
+            try:
+                body = await request.json()
+                if isinstance(body, dict):
+                    username = body.get("username")
+                    password = body.get("password")
+            except Exception:
+                pass
+
+        # Fallback check if username or password still missing
+        if not username or not password:
+            if body_bytes:
+                try:
+                    parsed = urllib.parse.parse_qs(body_bytes.decode("utf-8", errors="ignore"))
+                    username = username or parsed.get("username", [None])[0]
+                    password = password or parsed.get("password", [None])[0]
+                except Exception:
+                    pass
+    except Exception:
+        pass
 
     if not username or not password:
         raise HTTPException(
