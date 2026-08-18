@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional
 from datetime import datetime, date
-from fastapi import FastAPI, Depends, HTTPException, status, Query
+from fastapi import FastAPI, Depends, HTTPException, status, Query, Request
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +12,7 @@ from sqlalchemy import text, func
 from database import engine, Base, get_db
 import models
 import auth
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
 
 app = FastAPI(
     title="Machinecraft Jacquard Production & Inventory API",
@@ -154,12 +154,15 @@ def read_testing_pwa():
     raise HTTPException(status_code=404, detail="Testing PWA UI not found")
 
 
+security_bearer = HTTPBearer(auto_error=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 def get_current_user(
-    token: Optional[str] = Depends(oauth2_scheme),
+    bearer: Optional[HTTPAuthorizationCredentials] = Depends(security_bearer),
+    oauth_token: Optional[str] = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> Optional[models.User]:
+    token = bearer.credentials if bearer else oauth_token
     if not token:
         return None
     payload = auth.decode_token(token)
@@ -184,9 +187,33 @@ def require_user(user: Optional[models.User] = Depends(get_current_user)) -> mod
 # ==========================================
 
 @app.post("/api/auth/login", response_model=models.TokenResponse, tags=["Authentication"])
-def login(payload: models.LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.username == payload.username.strip()).first()
-    if not user or not auth.verify_password(payload.password, user.hashed_password):
+async def login(request: Request, db: Session = Depends(get_db)):
+    username = None
+    password = None
+
+    content_type = request.headers.get("content-type", "")
+    if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+        form = await request.form()
+        username = form.get("username")
+        password = form.get("password")
+    else:
+        try:
+            body = await request.json()
+            if isinstance(body, dict):
+                username = body.get("username")
+                password = body.get("password")
+        except Exception:
+            pass
+
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Username and password are required"
+        )
+
+    username_str = str(username).strip()
+    user = db.query(models.User).filter(models.User.username == username_str).first()
+    if not user or not auth.verify_password(str(password), user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",

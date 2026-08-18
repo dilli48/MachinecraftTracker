@@ -136,3 +136,6 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBdJHIdxCPrZ5kLtd4co6RZHvE6dhPQvmJdeF7xT2GAI
 cd ~/MachinecraftTracker
 git pull origin main
 ./deploy_vps_setup.sh
+
+cd /home/ubuntu/MachinecraftTracker && git pull origin main && sudo docker compose up -d --build
+
