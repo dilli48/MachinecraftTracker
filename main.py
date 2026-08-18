@@ -13,12 +13,17 @@ from sqlalchemy import text, func
 from database import engine, Base, get_db
 import models
 import auth
-from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials, HTTPBasic, HTTPBasicCredentials
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 
 app = FastAPI(
     title="Machinecraft Jacquard Production & Inventory API",
     description="API for component inventory tracking, operators, product boards, and production stage tracking",
     version="2.0.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
 
 # Security & CORS configuration
@@ -155,8 +160,36 @@ def read_testing_pwa():
     raise HTTPException(status_code=404, detail="Testing PWA UI not found")
 
 
+security_basic = HTTPBasic()
 security_bearer = HTTPBearer(auto_error=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+def verify_docs_credentials(
+    credentials: HTTPBasicCredentials = Depends(security_basic),
+    db: Session = Depends(get_db)
+):
+    username = credentials.username.strip() if credentials.username else ""
+    password = credentials.password
+    user = db.query(models.User).filter(models.User.username == username).first()
+    if not user or not auth.verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return username
+
+@app.get("/docs", include_in_schema=False)
+def get_swagger_documentation(username: str = Depends(verify_docs_credentials)):
+    return get_swagger_ui_html(openapi_url="/openapi.json", title=app.title + " - Documentation")
+
+@app.get("/redoc", include_in_schema=False)
+def get_redoc_documentation(username: str = Depends(verify_docs_credentials)):
+    return get_redoc_html(openapi_url="/openapi.json", title=app.title + " - ReDoc")
+
+@app.get("/openapi.json", include_in_schema=False)
+def openapi_endpoint(username: str = Depends(verify_docs_credentials)):
+    return get_openapi(title=app.title, version=app.version, routes=app.routes)
 
 def get_current_user(
     bearer: Optional[HTTPAuthorizationCredentials] = Depends(security_bearer),

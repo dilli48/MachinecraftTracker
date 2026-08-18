@@ -97,5 +97,14 @@ class MachinecraftTrackerApiTests(unittest.TestCase):
         delete_res = self.client.delete(f"/api/boards/{board_id}", headers=self.headers)
         self.assertEqual(delete_res.status_code, 204)
 
+    def test_06_docs_protection(self):
+        # 1. Unauthenticated request to /docs should return 401
+        unauth_res = self.client.get("/docs")
+        self.assertEqual(unauth_res.status_code, 401)
+
+        # 2. Authenticated request to /docs with basic auth should return 200
+        auth_res = self.client.get("/docs", auth=("mctracker", "2008batch"))
+        self.assertEqual(auth_res.status_code, 200)
+
 if __name__ == "__main__":
     unittest.main()
