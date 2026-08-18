@@ -466,8 +466,8 @@
         <div class="header-title-box">
             <div class="brand-logo-badge">MC</div>
             <div>
-                <h1 class="header-title">SHOP FLOOR PRODUCTION MATRIX</h1>
-                <div class="header-subtitle">Live Stage Inventory & Work In Progress Tracking</div>
+                <h1 class="header-title">ProductionData</h1>
+                <div class="header-subtitle">Live Stage Tracking</div>
             </div>
         </div>
 
@@ -475,7 +475,6 @@
             <div class="control-group">
                 <span class="control-label">Line:</span>
                 <select id="line-filter-select" class="line-select" onchange="displayApp.onLineChange()">
-                    <option value="">ALL PRODUCTION LINES</option>
                 </select>
             </div>
 
@@ -547,7 +546,7 @@
         <div class="matrix-header-bar">
             <div class="matrix-header-title">
                 <i class="fa-solid fa-table-cells" style="color: var(--primary);"></i>
-                <span id="current-line-title">ALL PRODUCTION LINES</span>
+                <span id="current-line-title">SELECT PRODUCTION LINE</span>
                 <span id="page-indicator-badge" class="cat-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); display: none; font-size: 0.95rem; font-weight: 700; margin-left: 0.5rem;">Page 1/1</span>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
@@ -566,7 +565,6 @@
                 <thead>
                     <tr id="matrix-thead-row">
                         <th class="board-col">Product Board</th>
-                        <th class="cat-col">Line Category</th>
                         <th>Loading...</th>
                     </tr>
                 </thead>
@@ -677,13 +675,13 @@
 
             populateLineDropdown() {
                 const select = document.getElementById('line-filter-select');
-                if (!this.allLineCategories) return;
+                if (!this.allLineCategories || this.allLineCategories.length === 0) return;
 
                 const existingOptions = Array.from(select.options).map(o => o.value);
-                const targetOptions = ['', ...this.allLineCategories];
+                const targetOptions = [...this.allLineCategories];
 
                 if (JSON.stringify(targetOptions) !== JSON.stringify(existingOptions)) {
-                    select.innerHTML = '<option value="">ALL PRODUCTION LINES</option>';
+                    select.innerHTML = '';
                     this.allLineCategories.forEach(c => {
                         const opt = document.createElement('option');
                         opt.value = c;
@@ -691,16 +689,21 @@
                         select.appendChild(opt);
                     });
                 }
+
+                if (!this.selectedLine || !this.allLineCategories.includes(this.selectedLine)) {
+                    this.selectedLine = this.allLineCategories[0];
+                }
+
                 select.value = this.selectedLine;
             },
 
             onLineChange() {
                 const select = document.getElementById('line-filter-select');
-                this.selectedLine = select.value;
+                this.selectedLine = select.value || (this.allLineCategories.length > 0 ? this.allLineCategories[0] : '');
                 this.currentPage = 0;
                 document.getElementById('current-line-title').innerText = this.selectedLine 
                     ? `LINE: ${this.selectedLine.toUpperCase()}`
-                    : 'ALL PRODUCTION LINES';
+                    : 'PRODUCTION DATA';
                 this.fetchData();
             },
 
@@ -801,7 +804,6 @@
                 const theadRow = document.getElementById('matrix-thead-row');
                 let html = `
                     <th class="board-col">Product Board</th>
-                    <th class="cat-col">Line Category</th>
                 `;
 
                 this.stages.forEach(st => {
@@ -822,7 +824,7 @@
                 if (!this.matrixData || this.matrixData.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="${this.stages.length + 3}" style="padding: 3rem; text-align: center; color: var(--text-muted); font-size: 1.3rem;">
+                            <td colspan="${this.stages.length + 2}" style="padding: 3rem; text-align: center; color: var(--text-muted); font-size: 1.3rem;">
                                 No board products found for selected line category.
                             </td>
                         </tr>
@@ -875,7 +877,6 @@
                     
                     let cellsHtml = `
                         <td class="board-cell">${this.escapeHtml(row.board_name)}</td>
-                        <td class="cat-cell"><span class="cat-badge">${this.escapeHtml(row.production_line_category || 'Unassigned')}</span></td>
                     `;
 
                     this.stages.forEach(st => {
@@ -898,7 +899,6 @@
                 let footHtml = `
                     <tr>
                         <td class="total-label">GRAND TOTALS</td>
-                        <td></td>
                 `;
 
                 this.stages.forEach(st => {
