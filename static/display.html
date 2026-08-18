@@ -474,17 +474,11 @@
 
         <div class="header-controls">
             <div class="control-group">
-                <span class="control-label">Line:</span>
-                <select id="line-filter-select" class="line-select" onchange="displayApp.onLineChange()">
-                </select>
-            </div>
-
-            <div class="control-group">
                 <span class="control-label">Rows:</span>
                 <select id="page-size-select" class="line-select" onchange="displayApp.onPageSizeChange()">
                     <option value="7">7 Rows (Big Text)</option>
                     <option value="10" selected>10 Rows</option>
-                    <option value="15">15 Rows (All Boards)</option>
+                    <option value="15">15 Rows</option>
                     <option value="999">Show All</option>
                 </select>
             </div>
@@ -512,7 +506,7 @@
         <div class="matrix-header-bar">
             <div class="matrix-header-title">
                 <i class="fa-solid fa-table-cells" style="color: var(--primary);"></i>
-                <span id="current-line-title">SELECT PRODUCTION LINE</span>
+                <span id="current-line-title">ALL PRODUCTION BOARDS</span>
                 <span id="page-indicator-badge" class="cat-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); display: none; font-size: 0.95rem; font-weight: 700; margin-left: 0.5rem;">Page 1/1</span>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
@@ -556,12 +550,9 @@
         const displayApp = {
             stages: [],
             matrixData: [],
-            allLineCategories: [],
-            selectedLine: '',
             pageSize: 10,
             currentPage: 0,
             autoCycle: true,
-            cycleIndex: 0,
             cycleInterval: null,
             refreshInterval: null,
 
@@ -569,7 +560,6 @@
                 this.updateClock();
                 setInterval(() => this.updateClock(), 1000);
 
-                await this.fetchAllCategories();
                 await this.fetchData();
                 this.refreshInterval = setInterval(() => this.fetchData(), 8000);
 
@@ -583,52 +573,15 @@
                 document.getElementById('clock-date').innerText = now.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
             },
 
-            async fetchAllCategories() {
-                try {
-                    const res = await fetch('/api/boards');
-                    if (res.ok) {
-                        const boards = await res.json();
-                        const categories = Array.from(new Set(
-                            boards
-                                .map(b => b.production_line_category)
-                                .filter(c => c && c.trim() !== '')
-                        )).sort();
-                        if (categories.length > 0) {
-                            this.allLineCategories = categories;
-                            this.populateLineDropdown();
-                        }
-                    }
-                } catch(e) {
-                    console.error('Error fetching board categories:', e);
-                }
-            },
-
             async fetchData() {
                 try {
-                    const url = this.selectedLine 
-                        ? `/api/production/stage-matrix?production_line=${encodeURIComponent(this.selectedLine)}`
-                        : `/api/production/stage-matrix`;
-
-                    const res = await fetch(url);
+                    const res = await fetch('/api/production/stage-matrix');
                     if (!res.ok) return;
 
                     const data = await res.json();
                     this.stages = data.stages || [];
                     this.matrixData = data.matrix || [];
 
-                    // Fallback extract categories if allLineCategories is not populated yet
-                    if (!this.allLineCategories || this.allLineCategories.length === 0) {
-                        const categories = Array.from(new Set(
-                            this.matrixData
-                                .map(b => b.production_line_category)
-                                .filter(c => c && c.trim() !== '')
-                        )).sort();
-                        if (categories.length > 0) {
-                            this.allLineCategories = categories;
-                        }
-                    }
-
-                    this.populateLineDropdown();
                     this.renderTableHeader();
                     this.renderTableBody();
 
@@ -638,43 +591,9 @@
                 }
             },
 
-            populateLineDropdown() {
-                const select = document.getElementById('line-filter-select');
-                if (!this.allLineCategories || this.allLineCategories.length === 0) return;
-
-                const existingOptions = Array.from(select.options).map(o => o.value);
-                const targetOptions = [...this.allLineCategories];
-
-                if (JSON.stringify(targetOptions) !== JSON.stringify(existingOptions)) {
-                    select.innerHTML = '';
-                    this.allLineCategories.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c;
-                        opt.textContent = c;
-                        select.appendChild(opt);
-                    });
-                }
-
-                if (!this.selectedLine || !this.allLineCategories.includes(this.selectedLine)) {
-                    this.selectedLine = this.allLineCategories[0];
-                }
-
-                select.value = this.selectedLine;
-            },
-
-            onLineChange() {
-                const select = document.getElementById('line-filter-select');
-                this.selectedLine = select.value || (this.allLineCategories.length > 0 ? this.allLineCategories[0] : '');
-                this.currentPage = 0;
-                document.getElementById('current-line-title').innerText = this.selectedLine 
-                    ? `LINE: ${this.selectedLine.toUpperCase()}`
-                    : 'PRODUCTION DATA';
-                this.fetchData();
-            },
-
             onPageSizeChange() {
                 const select = document.getElementById('page-size-select');
-                this.pageSize = parseInt(select.value, 10) || 7;
+                this.pageSize = parseInt(select.value, 10) || 10;
                 this.currentPage = 0;
                 this.renderTableBody();
             },
@@ -697,7 +616,6 @@
             startAutoCycle() {
                 this.autoCycle = true;
                 const btn = document.getElementById('auto-cycle-btn');
-                const statusText = document.getElementById('cycle-status-text');
 
                 if (btn) {
                     btn.classList.add('active');
@@ -705,15 +623,7 @@
                 }
 
                 if (this.cycleInterval) clearInterval(this.cycleInterval);
-
-                if (this.allLineCategories && this.allLineCategories.length > 0) {
-                    this.cycleIndex = 0;
-                    this.currentPage = 0;
-                    this.runAutoCycleStep();
-                    this.cycleInterval = setInterval(() => this.runAutoCycleStep(), 15000);
-                } else if (statusText) {
-                    statusText.innerText = 'Mode: Auto-cycle enabled (No line categories found)';
-                }
+                this.cycleInterval = setInterval(() => this.runAutoCycleStep(), 15000);
             },
 
             stopAutoCycle() {
@@ -738,37 +648,13 @@
             },
 
             runAutoCycleStep() {
-                if (!this.allLineCategories || this.allLineCategories.length === 0) return;
+                if (!this.matrixData || this.matrixData.length === 0) return;
 
-                // Page Flipping Check: If current line has more boards than pageSize, flip page first!
-                if (this.selectedLine && this.matrixData && this.matrixData.length > this.pageSize && this.pageSize < 999) {
-                    const totalPages = Math.ceil(this.matrixData.length / this.pageSize);
-                    if (this.currentPage + 1 < totalPages) {
-                        this.currentPage++;
-                        this.renderTableBody();
-                        const lineName = this.selectedLine.toUpperCase();
-                        const catPos = (this.cycleIndex === 0 ? this.allLineCategories.length : this.cycleIndex);
-                        document.getElementById('current-line-title').innerText = `LINE: ${lineName} (${catPos}/${this.allLineCategories.length})`;
-                        document.getElementById('cycle-status-text').innerText = `Mode: Auto-cycling (${this.selectedLine} - Page ${this.currentPage + 1}/${totalPages})`;
-                        return;
-                    }
-                }
+                const totalPages = Math.ceil(this.matrixData.length / this.pageSize);
+                if (totalPages <= 1 || this.pageSize >= 999) return;
 
-                // Reset page for next line category
-                this.currentPage = 0;
-
-                if (this.cycleIndex >= this.allLineCategories.length) {
-                    this.cycleIndex = 0;
-                }
-
-                this.selectedLine = this.allLineCategories[this.cycleIndex];
-                
-                document.getElementById('line-filter-select').value = this.selectedLine;
-                document.getElementById('current-line-title').innerText = `LINE: ${this.selectedLine.toUpperCase()} (${this.cycleIndex + 1}/${this.allLineCategories.length})`;
-                document.getElementById('cycle-status-text').innerText = `Mode: Auto-cycling (${this.cycleIndex + 1}/${this.allLineCategories.length}: ${this.selectedLine})`;
-                
-                this.fetchData();
-                this.cycleIndex = (this.cycleIndex + 1) % this.allLineCategories.length;
+                this.currentPage = (this.currentPage + 1) % totalPages;
+                this.renderTableBody();
             },
 
             getStageBadgeClass(stageName) {
@@ -801,13 +687,15 @@
                 const tbody = document.getElementById('matrix-tbody');
                 const pageBadge = document.getElementById('page-indicator-badge');
                 const pageNav = document.getElementById('page-nav-btns');
+                const titleEl = document.getElementById('current-line-title');
+                const statusText = document.getElementById('cycle-status-text');
                 tbody.innerHTML = '';
 
                 if (!this.matrixData || this.matrixData.length === 0) {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="${this.stages.length + 1}" style="padding: 3rem; text-align: center; color: var(--text-muted); font-size: 1.3rem;">
-                                No board products found for selected line category.
+                                No board products found in database.
                             </td>
                         </tr>
                     `;
@@ -824,15 +712,25 @@
                     this.currentPage = 0;
                 }
 
+                if (titleEl) {
+                    titleEl.innerText = `ALL PRODUCTION BOARDS (${totalBoards} BOARDS)`;
+                }
+
                 if (totalPages > 1 && this.pageSize < 999) {
                     if (pageBadge) {
                         pageBadge.style.display = 'inline-block';
-                        pageBadge.innerText = `Page ${this.currentPage + 1}/${totalPages} (${totalBoards} Boards)`;
+                        pageBadge.innerText = `Page ${this.currentPage + 1}/${totalPages}`;
                     }
                     if (pageNav) pageNav.style.display = 'flex';
                 } else {
                     if (pageBadge) pageBadge.style.display = 'none';
                     if (pageNav) pageNav.style.display = 'none';
+                }
+
+                if (statusText && this.autoCycle) {
+                    statusText.innerText = totalPages > 1 
+                        ? `Mode: Auto-cycling Pages (Page ${this.currentPage + 1}/${totalPages} • ${totalBoards} Boards)` 
+                        : `Mode: Auto-cycle ON (${totalBoards} Boards Total)`;
                 }
 
                 const startIndex = this.currentPage * this.pageSize;
