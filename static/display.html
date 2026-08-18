@@ -488,8 +488,8 @@
                 </select>
             </div>
 
-            <button id="auto-cycle-btn" class="toggle-btn" onclick="displayApp.toggleAutoCycle()">
-                <i class="fa-solid fa-arrows-rotate"></i> Auto-Cycle: OFF
+            <button id="auto-cycle-btn" class="toggle-btn active" onclick="displayApp.toggleAutoCycle()">
+                <i class="fa-solid fa-rotate fa-spin"></i> Auto-Cycle: ON (15s)
             </button>
 
             <button class="toggle-btn" onclick="displayApp.toggleFullscreen()">
@@ -597,7 +597,7 @@
             selectedLine: '',
             pageSize: 7,
             currentPage: 0,
-            autoCycle: false,
+            autoCycle: true,
             cycleIndex: 0,
             cycleInterval: null,
             refreshInterval: null,
@@ -609,6 +609,9 @@
                 await this.fetchAllCategories();
                 await this.fetchData();
                 this.refreshInterval = setInterval(() => this.fetchData(), 8000);
+
+                // Default Auto-Cycle to ON when page opens
+                this.startAutoCycle();
             },
 
             updateClock() {
@@ -729,28 +732,46 @@
                 }
             },
 
-            toggleAutoCycle() {
-                this.autoCycle = !this.autoCycle;
+            startAutoCycle() {
+                this.autoCycle = true;
                 const btn = document.getElementById('auto-cycle-btn');
                 const statusText = document.getElementById('cycle-status-text');
 
-                if (this.autoCycle) {
+                if (btn) {
                     btn.classList.add('active');
                     btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Auto-Cycle: ON (15s)';
-                    
-                    if (this.allLineCategories && this.allLineCategories.length > 0) {
-                        this.cycleIndex = 0;
-                        this.currentPage = 0;
-                        this.runAutoCycleStep();
-                        this.cycleInterval = setInterval(() => this.runAutoCycleStep(), 15000);
-                    } else {
-                        statusText.innerText = 'Mode: Auto-cycle enabled (No line categories found)';
-                    }
-                } else {
+                }
+
+                if (this.cycleInterval) clearInterval(this.cycleInterval);
+
+                if (this.allLineCategories && this.allLineCategories.length > 0) {
+                    this.cycleIndex = 0;
+                    this.currentPage = 0;
+                    this.runAutoCycleStep();
+                    this.cycleInterval = setInterval(() => this.runAutoCycleStep(), 15000);
+                } else if (statusText) {
+                    statusText.innerText = 'Mode: Auto-cycle enabled (No line categories found)';
+                }
+            },
+
+            stopAutoCycle() {
+                this.autoCycle = false;
+                const btn = document.getElementById('auto-cycle-btn');
+                const statusText = document.getElementById('cycle-status-text');
+
+                if (btn) {
                     btn.classList.remove('active');
                     btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Auto-Cycle: OFF';
-                    statusText.innerText = 'Mode: Static View';
-                    clearInterval(this.cycleInterval);
+                }
+                if (statusText) statusText.innerText = 'Mode: Static View';
+                if (this.cycleInterval) clearInterval(this.cycleInterval);
+            },
+
+            toggleAutoCycle() {
+                if (this.autoCycle) {
+                    this.stopAutoCycle();
+                } else {
+                    this.startAutoCycle();
                 }
             },
 
