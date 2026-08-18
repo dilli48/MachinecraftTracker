@@ -482,8 +482,8 @@
             <div class="control-group">
                 <span class="control-label">Rows:</span>
                 <select id="page-size-select" class="line-select" onchange="displayApp.onPageSizeChange()">
-                    <option value="7" selected>7 Rows (Big Text)</option>
-                    <option value="10">10 Rows</option>
+                    <option value="7">7 Rows (Big Text)</option>
+                    <option value="10" selected>10 Rows</option>
                     <option value="15">15 Rows (All Boards)</option>
                     <option value="999">Show All</option>
                 </select>
@@ -541,9 +541,6 @@
                         </td>
                     </tr>
                 </tbody>
-                <tfoot id="matrix-tfoot">
-                    <!-- Grand Totals inserted dynamically -->
-                </tfoot>
             </table>
         </div>
     </main>
@@ -561,7 +558,7 @@
             matrixData: [],
             allLineCategories: [],
             selectedLine: '',
-            pageSize: 7,
+            pageSize: 10,
             currentPage: 0,
             autoCycle: true,
             cycleIndex: 0,
@@ -802,7 +799,6 @@
 
             renderTableBody() {
                 const tbody = document.getElementById('matrix-tbody');
-                const tfoot = document.getElementById('matrix-tfoot');
                 const pageBadge = document.getElementById('page-indicator-badge');
                 const pageNav = document.getElementById('page-nav-btns');
                 tbody.innerHTML = '';
@@ -815,7 +811,6 @@
                             </td>
                         </tr>
                     `;
-                    tfoot.innerHTML = '';
                     if (pageBadge) pageBadge.style.display = 'none';
                     if (pageNav) pageNav.style.display = 'none';
                     return;
@@ -844,17 +839,6 @@
                 const endIndex = Math.min(startIndex + this.pageSize, totalBoards);
                 const visibleRows = (this.pageSize >= 999) ? this.matrixData : this.matrixData.slice(startIndex, endIndex);
 
-                // Stage totals accumulator for ALL boards in the line
-                const stageTotals = {};
-                this.stages.forEach(st => stageTotals[st] = 0);
-
-                this.matrixData.forEach(row => {
-                    this.stages.forEach(st => {
-                        const qty = row.stage_quantities ? (row.stage_quantities[st] || 0) : 0;
-                        stageTotals[st] += qty;
-                    });
-                });
-
                 // Render visible rows for this page
                 visibleRows.forEach(row => {
                     const tr = document.createElement('tr');
@@ -877,25 +861,6 @@
                     tr.innerHTML = cellsHtml;
                     tbody.appendChild(tr);
                 });
-
-                // Render Footer Totals
-                let footHtml = `
-                    <tr>
-                        <td class="total-label">GRAND TOTALS</td>
-                `;
-
-                this.stages.forEach(st => {
-                    const totalQty = stageTotals[st] || 0;
-                    if (totalQty > 0) {
-                        const badgeClass = this.getStageBadgeClass(st);
-                        footHtml += `<td><span class="qty-badge ${badgeClass}">${totalQty}</span></td>`;
-                    } else {
-                        footHtml += `<td><span class="qty-empty">0</span></td>`;
-                    }
-                });
-
-                footHtml += `</tr>`;
-                tfoot.innerHTML = footHtml;
             },
 
             toggleFullscreen() {
