@@ -578,7 +578,7 @@
         const displayApp = {
             stages: [],
             matrixData: [],
-            lines: [],
+            allLineCategories: [],
             selectedLine: '',
             autoCycle: false,
             cycleIndex: 0,
@@ -589,6 +589,7 @@
                 this.updateClock();
                 setInterval(() => this.updateClock(), 1000);
 
+                await this.fetchAllCategories();
                 await this.fetchData();
                 this.refreshInterval = setInterval(() => this.fetchData(), 8000);
             },
@@ -597,6 +598,26 @@
                 const now = new Date();
                 document.getElementById('clock-time').innerText = now.toLocaleTimeString('en-US', { hour12: true });
                 document.getElementById('clock-date').innerText = now.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+            },
+
+            async fetchAllCategories() {
+                try {
+                    const res = await fetch('/api/boards');
+                    if (res.ok) {
+                        const boards = await res.json();
+                        const categories = Array.from(new Set(
+                            boards
+                                .map(b => b.production_line_category)
+                                .filter(c => c && c.trim() !== '')
+                        )).sort();
+                        if (categories.length > 0) {
+                            this.allLineCategories = categories;
+                            this.populateLineDropdown();
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error fetching board categories:', e);
+                }
             },
 
             async fetchData() {
@@ -612,6 +633,18 @@
                     this.stages = data.stages || [];
                     this.matrixData = data.matrix || [];
 
+                    // Fallback extract categories if allLineCategories is not populated yet
+                    if (!this.allLineCategories || this.allLineCategories.length === 0) {
+                        const categories = Array.from(new Set(
+                            this.matrixData
+                                .map(b => b.production_line_category)
+                                .filter(c => c && c.trim() !== '')
+                        )).sort();
+                        if (categories.length > 0) {
+                            this.allLineCategories = categories;
+                        }
+                    }
+
                     this.populateLineDropdown();
                     this.renderTableHeader();
                     this.renderTableBody();
@@ -625,26 +658,21 @@
 
             populateLineDropdown() {
                 const select = document.getElementById('line-filter-select');
-                const categories = Array.from(new Set(
-                    this.matrixData
-                        .map(b => b.production_line_category)
-                        .filter(c => c && c.trim() !== '')
-                )).sort();
+                if (!this.allLineCategories) return;
 
-                this.lines = categories;
-
-                // Only repopulate if options changed
                 const existingOptions = Array.from(select.options).map(o => o.value);
-                if (JSON.stringify(['', ...categories]) !== JSON.stringify(existingOptions)) {
+                const targetOptions = ['', ...this.allLineCategories];
+
+                if (JSON.stringify(targetOptions) !== JSON.stringify(existingOptions)) {
                     select.innerHTML = '<option value="">ALL PRODUCTION LINES</option>';
-                    categories.forEach(c => {
+                    this.allLineCategories.forEach(c => {
                         const opt = document.createElement('option');
                         opt.value = c;
                         opt.textContent = c;
                         select.appendChild(opt);
                     });
-                    select.value = this.selectedLine;
                 }
+                select.value = this.selectedLine;
             },
 
             onLineChange() {
@@ -664,10 +692,14 @@
                 if (this.autoCycle) {
                     btn.classList.add('active');
                     btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Auto-Cycle: ON (15s)';
-                    statusText.innerText = 'Mode: Auto-cycling through Production Lines every 15s';
                     
-                    this.cycleIndex = 0;
-                    this.cycleInterval = setInterval(() => this.runAutoCycleStep(), 15000);
+                    if (this.allLineCategories && this.allLineCategories.length > 0) {
+                        this.cycleIndex = 0;
+                        this.runAutoCycleStep();
+                        this.cycleInterval = setInterval(() => this.runAutoCycleStep(), 15000);
+                    } else {
+                        statusText.innerText = 'Mode: Auto-cycle enabled (No line categories found)';
+                    }
                 } else {
                     btn.classList.remove('active');
                     btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Auto-Cycle: OFF';
@@ -677,15 +709,21 @@
             },
 
             runAutoCycleStep() {
-                if (!this.lines || this.lines.length === 0) return;
+                if (!this.allLineCategories || this.allLineCategories.length === 0) return;
                 
-                // Cycle: ALL LINES (0) -> Line 1 -> Line 2 -> Line N -> ALL LINES
-                const allLinesOptions = ['', ...this.lines];
-                this.cycleIndex = (this.cycleIndex + 1) % allLinesOptions.length;
-                this.selectedLine = allLinesOptions[this.cycleIndex];
+                // Cycle strictly through specific production lines (excluding ALL PRODUCTION LINES)
+                if (this.cycleIndex >= this.allLineCategories.length) {
+                    this.cycleIndex = 0;
+                }
+
+                this.selectedLine = this.allLineCategories[this.cycleIndex];
                 
                 document.getElementById('line-filter-select').value = this.selectedLine;
-                this.onLineChange();
+                document.getElementById('current-line-title').innerText = `LINE: ${this.selectedLine.toUpperCase()} (${this.cycleIndex + 1}/${this.allLineCategories.length})`;
+                document.getElementById('cycle-status-text').innerText = `Mode: Auto-cycling (${this.cycleIndex + 1}/${this.allLineCategories.length}: ${this.selectedLine})`;
+                
+                this.fetchData();
+                this.cycleIndex = (this.cycleIndex + 1) % this.allLineCategories.length;
             },
 
             getStageBadgeClass(stageName) {
