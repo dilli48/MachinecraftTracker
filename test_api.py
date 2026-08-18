@@ -79,5 +79,23 @@ class MachinecraftTrackerApiTests(unittest.TestCase):
         res_list = self.client.get("/api/auth/users", headers=self.headers)
         self.assertEqual(res_list.status_code, 200)
 
+    def test_05_board_creation_update_delete(self):
+        # 1. Create board without production_line_category
+        board_data = {"name": "Test Unassigned Board", "production_line_category": None}
+        create_res = self.client.post("/api/boards", json=board_data, headers=self.headers)
+        self.assertIn(create_res.status_code, [200, 201])
+        board_id = create_res.json()["id"]
+        self.assertIsNone(create_res.json()["production_line_category"])
+
+        # 2. Update board with category
+        update_data = {"name": "Test Unassigned Board", "production_line_category": "MACHINECRAFT JACQUARD"}
+        update_res = self.client.put(f"/api/boards/{board_id}", json=update_data, headers=self.headers)
+        self.assertEqual(update_res.status_code, 200)
+        self.assertEqual(update_res.json()["production_line_category"], "MACHINECRAFT JACQUARD")
+
+        # 3. Delete board
+        delete_res = self.client.delete(f"/api/boards/{board_id}", headers=self.headers)
+        self.assertEqual(delete_res.status_code, 204)
+
 if __name__ == "__main__":
     unittest.main()

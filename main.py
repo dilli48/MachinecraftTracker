@@ -437,6 +437,20 @@ def update_board(
     return board
 
 
+@app.delete("/api/boards/{board_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Boards"])
+def delete_board(
+    board_id: int,
+    db: Session = Depends(get_db)
+):
+    board = db.query(models.Board).filter(models.Board.id == board_id).first()
+    if not board:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
+    db.delete(board)
+    db.commit()
+    return None
+
+
+
 # ==========================================
 # Production Stage Tracking Endpoints
 # ==========================================

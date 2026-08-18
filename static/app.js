@@ -430,11 +430,27 @@ const app = {
     renderBoardsList() {
         const tbody = document.getElementById('boards-list-tbody');
         tbody.innerHTML = '';
+        if (!this.boards || this.boards.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1rem;">No product boards found.</td></tr>';
+            return;
+        }
         this.boards.forEach(b => {
             const tr = document.createElement('tr');
+            const catBadge = b.production_line_category 
+                ? `<span class="badge badge-info">${this.escapeHtml(b.production_line_category)}</span>` 
+                : `<span class="badge" style="background: rgba(239,68,68,0.2); color: #f87171;"><i class="fa-solid fa-triangle-exclamation"></i> Unassigned</span>`;
+
             tr.innerHTML = `
                 <td><strong>${this.escapeHtml(b.name)}</strong></td>
-                <td><span class="badge badge-info">Cat ${this.escapeHtml(b.production_line_category || '-')}</span></td>
+                <td>${catBadge}</td>
+                <td style="text-align: right; display: flex; gap: 0.35rem; justify-content: flex-end;">
+                    <button class="btn btn-secondary" style="padding: 0.25rem 0.55rem; font-size: 0.78rem;" onclick="app.openEditBoardModal(${b.id})">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </button>
+                    <button class="btn" style="padding: 0.25rem 0.55rem; font-size: 0.78rem; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3);" onclick="app.deleteBoard(${b.id}, '${this.escapeHtml(b.name)}')">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -610,6 +626,63 @@ const app = {
             }
         } catch (e) {
             this.showToast('Network error: ' + e.message, 'error');
+        }
+    },
+
+    openEditBoardModal(boardId) {
+        const board = this.boards.find(b => b.id === boardId);
+        if (!board) return;
+
+        document.getElementById('edit_board_id').value = board.id;
+        document.getElementById('edit_board_name').value = board.name;
+        document.getElementById('edit_board_category').value = board.production_line_category || '';
+        document.getElementById('edit-board-modal-title').innerText = `Edit Board Product #${board.id}`;
+
+        this.openModal('edit-board-modal');
+    },
+
+    async saveBoardEdit(event) {
+        event.preventDefault();
+        const boardId = parseInt(document.getElementById('edit_board_id').value, 10);
+        const name = document.getElementById('edit_board_name').value.trim();
+        const production_line_category = document.getElementById('edit_board_category').value.trim() || null;
+
+        if (!boardId || !name) return;
+
+        try {
+            const res = await this.authFetch(`/api/boards/${boardId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, production_line_category })
+            });
+
+            if (res.ok) {
+                this.showToast(`Board '${name}' updated successfully!`, 'success');
+                this.closeModal('edit-board-modal');
+                await this.refreshData();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Failed to update board', 'error');
+            }
+        } catch (e) {
+            this.showToast('Network error: ' + e.message, 'error');
+        }
+    },
+
+    async deleteBoard(boardId, boardName) {
+        if (!confirm(`Are you sure you want to delete board '${boardName}'?`)) return;
+
+        try {
+            const res = await this.authFetch(`/api/boards/${boardId}`, { method: 'DELETE' });
+            if (res.ok || res.status === 204) {
+                this.showToast(`Board '${boardName}' deleted!`, 'success');
+                await this.refreshData();
+            } else {
+                const err = await res.json();
+                this.showToast(err.detail || 'Failed to delete board', 'error');
+            }
+        } catch (e) {
+            this.showToast('Error: ' + e.message, 'error');
         }
     },
 
