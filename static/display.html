@@ -372,27 +372,30 @@
             display: inline-block;
             font-family: 'JetBrains Mono', monospace;
             font-weight: 800;
-            font-size: 1.5rem;
-            padding: 0.3rem 0.85rem;
+            font-size: 1.6rem;
+            padding: 0.35rem 0.95rem;
             border-radius: 8px;
-            min-width: 55px;
+            min-width: 60px;
             text-align: center;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .qty-empty {
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 1.2rem;
-            font-weight: 400;
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: rgba(255, 255, 255, 0.15);
+            padding: 0.35rem 0.95rem;
         }
 
-        .qty-smd { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
-        .qty-pinsolder { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
-        .qty-dipsolder { background: rgba(249, 115, 22, 0.2); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.4); }
-        .qty-cleaning { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4); }
-        .qty-testing { background: rgba(244, 63, 94, 0.25); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
-        .qty-stock { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-        .qty-delivery { background: rgba(129, 140, 248, 0.2); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.4); }
+        .qty-smd { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.5); }
+        .qty-pinsolder { background: rgba(251, 191, 36, 0.25); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.5); }
+        .qty-dipsolder { background: rgba(249, 115, 22, 0.25); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.5); }
+        .qty-cleaning { background: rgba(192, 132, 252, 0.25); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.5); }
+        .qty-testing { background: rgba(244, 63, 94, 0.28); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.5); }
+        .qty-stock { background: rgba(16, 185, 129, 0.28); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); }
+        .qty-delivery { background: rgba(129, 140, 248, 0.25); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.5); }
 
         .qty-total {
             background: linear-gradient(135deg, rgba(2, 132, 199, 0.3), rgba(99, 102, 241, 0.3));
@@ -505,41 +508,6 @@
             </div>
         </div>
     </header>
-
-    <!-- Top Summary Stat Cards -->
-    <section class="stats-grid">
-        <div class="stat-card wip">
-            <div class="stat-info">
-                <span class="stat-label">Total Work In Progress</span>
-                <span class="stat-number" id="stat-total-wip">0</span>
-            </div>
-            <i class="fa-solid fa-industry stat-icon" style="color: #38bdf8;"></i>
-        </div>
-
-        <div class="stat-card assembly">
-            <div class="stat-info">
-                <span class="stat-label">In Soldering & Assembly</span>
-                <span class="stat-number" id="stat-assembly">0</span>
-            </div>
-            <i class="fa-solid fa-microchip stat-icon" style="color: #fbbf24;"></i>
-        </div>
-
-        <div class="stat-card testing">
-            <div class="stat-info">
-                <span class="stat-label">In Quality Testing</span>
-                <span class="stat-number" id="stat-testing">0</span>
-            </div>
-            <i class="fa-solid fa-vial-circle-check stat-icon" style="color: #f43f5e;"></i>
-        </div>
-
-        <div class="stat-card stock">
-            <div class="stat-info">
-                <span class="stat-label">Ready Board Stock</span>
-                <span class="stat-number" id="stat-stock">0</span>
-            </div>
-            <i class="fa-solid fa-boxes-stacked stat-icon" style="color: #34d399;"></i>
-        </div>
-    </section>
 
     <!-- Full Screen Matrix Table -->
     <main class="matrix-container">
@@ -668,7 +636,6 @@
                     this.populateLineDropdown();
                     this.renderTableHeader();
                     this.renderTableBody();
-                    this.renderStats();
 
                     document.getElementById('last-updated-text').innerText = 'Last updated: ' + new Date().toLocaleTimeString('en-US', { hour12: true });
                 } catch (e) {
@@ -831,7 +798,6 @@
                     html += `<th>${st}</th>`;
                 });
 
-                html += `<th style="width: 10%;">TOTAL WIP</th>`;
                 theadRow.innerHTML = html;
             },
 
@@ -845,7 +811,7 @@
                 if (!this.matrixData || this.matrixData.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="${this.stages.length + 2}" style="padding: 3rem; text-align: center; color: var(--text-muted); font-size: 1.3rem;">
+                            <td colspan="${this.stages.length + 1}" style="padding: 3rem; text-align: center; color: var(--text-muted); font-size: 1.3rem;">
                                 No board products found for selected line category.
                             </td>
                         </tr>
@@ -882,14 +848,12 @@
                 // Stage totals accumulator for ALL boards in the line
                 const stageTotals = {};
                 this.stages.forEach(st => stageTotals[st] = 0);
-                let grandWip = 0;
 
                 this.matrixData.forEach(row => {
                     this.stages.forEach(st => {
                         const qty = row.stage_quantities ? (row.stage_quantities[st] || 0) : 0;
                         stageTotals[st] += qty;
                     });
-                    grandWip += (row.total_wip || 0);
                 });
 
                 // Render visible rows for this page
@@ -911,7 +875,6 @@
                         }
                     });
 
-                    cellsHtml += `<td><span class="qty-badge qty-total">${row.total_wip || 0}</span></td>`;
                     tr.innerHTML = cellsHtml;
                     tbody.appendChild(tr);
                 });
@@ -932,38 +895,8 @@
                     }
                 });
 
-                footHtml += `<td><span class="qty-badge qty-total" style="font-size: 1.8rem; padding: 0.45rem 1.1rem; background: var(--primary); color: #fff;">${grandWip}</span></td></tr>`;
+                footHtml += `</tr>`;
                 tfoot.innerHTML = footHtml;
-            },
-
-            renderStats() {
-                let totalWip = 0;
-                let assembly = 0;
-                let testing = 0;
-                let stock = 0;
-
-                this.matrixData.forEach(row => {
-                    totalWip += (row.total_wip || 0);
-
-                    if (row.stage_quantities) {
-                        Object.keys(row.stage_quantities).forEach(st => {
-                            const qty = row.stage_quantities[st] || 0;
-                            const s = st.toLowerCase();
-                            if (s.includes('smd') || s.includes('pin') || s.includes('dip') || s.includes('empty')) {
-                                assembly += qty;
-                            } else if (s.includes('test') || s.includes('clean')) {
-                                testing += qty;
-                            } else if (s.includes('stock')) {
-                                stock += qty;
-                            }
-                        });
-                    }
-                });
-
-                document.getElementById('stat-total-wip').innerText = totalWip;
-                document.getElementById('stat-assembly').innerText = assembly;
-                document.getElementById('stat-testing').innerText = testing;
-                document.getElementById('stat-stock').innerText = stock;
             },
 
             toggleFullscreen() {
