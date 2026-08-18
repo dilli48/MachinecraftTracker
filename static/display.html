@@ -367,19 +367,19 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* Stat-Card-Style Production Stage Quantities */
+        /* Plain Crisp Stage Quantity Numbers (Stat-Card-Style Text) */
         .qty-badge {
             display: inline-block;
             font-family: 'Outfit', sans-serif;
             font-weight: 900;
             font-size: 2.2rem;
             line-height: 1;
-            padding: 0.25rem 0.85rem;
-            border-radius: 10px;
-            min-width: 65px;
             text-align: center;
             letter-spacing: -0.5px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            text-shadow: none;
         }
 
         .qty-empty {
@@ -388,44 +388,19 @@
             font-weight: 900;
             font-size: 1.9rem;
             color: rgba(255, 255, 255, 0.12);
-            padding: 0.25rem 0.85rem;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            text-shadow: none;
         }
 
-        .qty-smd { 
-            color: #38bdf8; 
-            background: rgba(56, 189, 248, 0.15); 
-            border: 1px solid rgba(56, 189, 248, 0.35); 
-        }
-        .qty-pinsolder { 
-            color: #fbbf24; 
-            background: rgba(251, 191, 36, 0.15); 
-            border: 1px solid rgba(251, 191, 36, 0.35); 
-        }
-        .qty-dipsolder { 
-            color: #f97316; 
-            background: rgba(249, 115, 22, 0.15); 
-            border: 1px solid rgba(249, 115, 22, 0.35); 
-        }
-        .qty-cleaning { 
-            color: #c084fc; 
-            background: rgba(192, 132, 252, 0.15); 
-            border: 1px solid rgba(192, 132, 252, 0.35); 
-        }
-        .qty-testing { 
-            color: #f43f5e; 
-            background: rgba(244, 63, 94, 0.18); 
-            border: 1px solid rgba(244, 63, 94, 0.4); 
-        }
-        .qty-stock { 
-            color: #34d399; 
-            background: rgba(16, 185, 129, 0.18); 
-            border: 1px solid rgba(16, 185, 129, 0.4); 
-        }
-        .qty-delivery { 
-            color: #818cf8; 
-            background: rgba(129, 140, 248, 0.15); 
-            border: 1px solid rgba(129, 140, 248, 0.35); 
-        }
+        .qty-smd { color: #38bdf8; }
+        .qty-pinsolder { color: #fbbf24; }
+        .qty-dipsolder { color: #f97316; }
+        .qty-cleaning { color: #c084fc; }
+        .qty-testing { color: #f43f5e; }
+        .qty-stock { color: #34d399; }
+        .qty-delivery { color: #818cf8; }
 
         /* Totals Footer Row */
         .display-table tfoot tr {
@@ -478,8 +453,8 @@
             body { padding: 1.25rem; }
             .header-title { font-size: 2.2rem; }
             .display-table td.board-cell { font-size: 1.6rem; }
-            .qty-badge { font-size: 2.5rem; padding: 0.35rem 1rem; min-width: 75px; }
-            .qty-empty { font-size: 2.2rem; padding: 0.35rem 1rem; }
+            .qty-badge { font-size: 2.5rem; }
+            .qty-empty { font-size: 2.2rem; }
             .display-table th { font-size: 1.15rem; padding: 1.1rem 0.85rem; }
         }
     </style>
