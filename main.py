@@ -699,7 +699,21 @@ def get_stage_matrix(
     query = db.query(models.Board)
     if production_line:
         query = query.filter(models.Board.production_line_category == production_line)
-    boards = query.order_by(models.Board.name.asc()).all()
+    boards = query.all()
+
+    def line_priority(board):
+        cat = (board.production_line_category or '').strip().upper()
+        if 'JACQUARD' in cat and 'MACHINECRAFT' in cat:
+            return (1, cat, board.name)
+        if 'CL' in cat:
+            return (2, cat, board.name)
+        if 'OTHER' in cat:
+            return (3, cat, board.name)
+        if 'RMPU' in cat:
+            return (4, cat, board.name)
+        return (10, cat, board.name)
+
+    boards = sorted(boards, key=line_priority)
 
     matrix = []
     for board in boards:
