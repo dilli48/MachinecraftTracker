@@ -479,6 +479,16 @@
                 </select>
             </div>
 
+            <div class="control-group">
+                <span class="control-label">Rows:</span>
+                <select id="page-size-select" class="line-select" onchange="displayApp.onPageSizeChange()">
+                    <option value="7" selected>7 Rows (Big Text)</option>
+                    <option value="10">10 Rows</option>
+                    <option value="15">15 Rows (All Boards)</option>
+                    <option value="999">Show All</option>
+                </select>
+            </div>
+
             <button id="auto-cycle-btn" class="toggle-btn" onclick="displayApp.toggleAutoCycle()">
                 <i class="fa-solid fa-arrows-rotate"></i> Auto-Cycle: OFF
             </button>
@@ -538,9 +548,16 @@
             <div class="matrix-header-title">
                 <i class="fa-solid fa-table-cells" style="color: var(--primary);"></i>
                 <span id="current-line-title">ALL PRODUCTION LINES</span>
+                <span id="page-indicator-badge" class="cat-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); display: none; font-size: 0.95rem; font-weight: 700; margin-left: 0.5rem;">Page 1/1</span>
             </div>
-            <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;" id="last-updated-text">
-                Last updated: Just now
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div id="page-nav-btns" style="display: none; gap: 0.4rem;">
+                    <button class="toggle-btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" onclick="displayApp.prevPage()"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                    <button class="toggle-btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" onclick="displayApp.nextPage()">Next <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;" id="last-updated-text">
+                    Last updated: Just now
+                </div>
             </div>
         </div>
 
@@ -580,6 +597,8 @@
             matrixData: [],
             allLineCategories: [],
             selectedLine: '',
+            pageSize: 7,
+            currentPage: 0,
             autoCycle: false,
             cycleIndex: 0,
             cycleInterval: null,
@@ -678,10 +697,33 @@
             onLineChange() {
                 const select = document.getElementById('line-filter-select');
                 this.selectedLine = select.value;
+                this.currentPage = 0;
                 document.getElementById('current-line-title').innerText = this.selectedLine 
                     ? `LINE: ${this.selectedLine.toUpperCase()}`
                     : 'ALL PRODUCTION LINES';
                 this.fetchData();
+            },
+
+            onPageSizeChange() {
+                const select = document.getElementById('page-size-select');
+                this.pageSize = parseInt(select.value, 10) || 7;
+                this.currentPage = 0;
+                this.renderTableBody();
+            },
+
+            prevPage() {
+                if (this.currentPage > 0) {
+                    this.currentPage--;
+                    this.renderTableBody();
+                }
+            },
+
+            nextPage() {
+                const totalPages = Math.ceil((this.matrixData ? this.matrixData.length : 0) / this.pageSize);
+                if (this.currentPage + 1 < totalPages) {
+                    this.currentPage++;
+                    this.renderTableBody();
+                }
             },
 
             toggleAutoCycle() {
@@ -695,6 +737,7 @@
                     
                     if (this.allLineCategories && this.allLineCategories.length > 0) {
                         this.cycleIndex = 0;
+                        this.currentPage = 0;
                         this.runAutoCycleStep();
                         this.cycleInterval = setInterval(() => this.runAutoCycleStep(), 15000);
                     } else {
@@ -710,8 +753,24 @@
 
             runAutoCycleStep() {
                 if (!this.allLineCategories || this.allLineCategories.length === 0) return;
-                
-                // Cycle strictly through specific production lines (excluding ALL PRODUCTION LINES)
+
+                // Page Flipping Check: If current line has more boards than pageSize, flip page first!
+                if (this.selectedLine && this.matrixData && this.matrixData.length > this.pageSize && this.pageSize < 999) {
+                    const totalPages = Math.ceil(this.matrixData.length / this.pageSize);
+                    if (this.currentPage + 1 < totalPages) {
+                        this.currentPage++;
+                        this.renderTableBody();
+                        const lineName = this.selectedLine.toUpperCase();
+                        const catPos = (this.cycleIndex === 0 ? this.allLineCategories.length : this.cycleIndex);
+                        document.getElementById('current-line-title').innerText = `LINE: ${lineName} (${catPos}/${this.allLineCategories.length})`;
+                        document.getElementById('cycle-status-text').innerText = `Mode: Auto-cycling (${this.selectedLine} - Page ${this.currentPage + 1}/${totalPages})`;
+                        return;
+                    }
+                }
+
+                // Reset page for next line category
+                this.currentPage = 0;
+
                 if (this.cycleIndex >= this.allLineCategories.length) {
                     this.cycleIndex = 0;
                 }
@@ -756,6 +815,8 @@
             renderTableBody() {
                 const tbody = document.getElementById('matrix-tbody');
                 const tfoot = document.getElementById('matrix-tfoot');
+                const pageBadge = document.getElementById('page-indicator-badge');
+                const pageNav = document.getElementById('page-nav-btns');
                 tbody.innerHTML = '';
 
                 if (!this.matrixData || this.matrixData.length === 0) {
@@ -767,15 +828,49 @@
                         </tr>
                     `;
                     tfoot.innerHTML = '';
+                    if (pageBadge) pageBadge.style.display = 'none';
+                    if (pageNav) pageNav.style.display = 'none';
                     return;
                 }
 
-                // Stage totals accumulator
+                // Calculate Pagination
+                const totalBoards = this.matrixData.length;
+                const totalPages = Math.ceil(totalBoards / this.pageSize);
+
+                if (this.currentPage >= totalPages) {
+                    this.currentPage = 0;
+                }
+
+                if (totalPages > 1 && this.pageSize < 999) {
+                    if (pageBadge) {
+                        pageBadge.style.display = 'inline-block';
+                        pageBadge.innerText = `Page ${this.currentPage + 1}/${totalPages} (${totalBoards} Boards)`;
+                    }
+                    if (pageNav) pageNav.style.display = 'flex';
+                } else {
+                    if (pageBadge) pageBadge.style.display = 'none';
+                    if (pageNav) pageNav.style.display = 'none';
+                }
+
+                const startIndex = this.currentPage * this.pageSize;
+                const endIndex = Math.min(startIndex + this.pageSize, totalBoards);
+                const visibleRows = (this.pageSize >= 999) ? this.matrixData : this.matrixData.slice(startIndex, endIndex);
+
+                // Stage totals accumulator for ALL boards in the line
                 const stageTotals = {};
                 this.stages.forEach(st => stageTotals[st] = 0);
                 let grandWip = 0;
 
                 this.matrixData.forEach(row => {
+                    this.stages.forEach(st => {
+                        const qty = row.stage_quantities ? (row.stage_quantities[st] || 0) : 0;
+                        stageTotals[st] += qty;
+                    });
+                    grandWip += (row.total_wip || 0);
+                });
+
+                // Render visible rows for this page
+                visibleRows.forEach(row => {
                     const tr = document.createElement('tr');
                     
                     let cellsHtml = `
@@ -785,7 +880,6 @@
 
                     this.stages.forEach(st => {
                         const qty = row.stage_quantities ? (row.stage_quantities[st] || 0) : 0;
-                        stageTotals[st] += qty;
 
                         if (qty > 0) {
                             const badgeClass = this.getStageBadgeClass(st);
@@ -794,8 +888,6 @@
                             cellsHtml += `<td><span class="qty-empty">-</span></td>`;
                         }
                     });
-
-                    grandWip += (row.total_wip || 0);
 
                     cellsHtml += `<td><span class="qty-badge qty-total">${row.total_wip || 0}</span></td>`;
                     tr.innerHTML = cellsHtml;
