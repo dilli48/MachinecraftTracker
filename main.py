@@ -159,6 +159,15 @@ def read_testing_pwa():
         return FileResponse(pwa_file)
     raise HTTPException(status_code=404, detail="Testing PWA UI not found")
 
+@app.get("/display", tags=["Shop Floor Display"])
+@app.get("/shopfloor", tags=["Shop Floor Display"])
+@app.get("/tv", tags=["Shop Floor Display"])
+def read_shopfloor_display():
+    display_file = os.path.join(static_dir, "display.html")
+    if os.path.exists(display_file):
+        return FileResponse(display_file)
+    raise HTTPException(status_code=404, detail="Shop Floor Display UI not found")
+
 
 security_basic = HTTPBasic()
 security_bearer = HTTPBearer(auto_error=False)
