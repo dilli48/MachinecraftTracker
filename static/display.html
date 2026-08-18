@@ -367,42 +367,71 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* Large Quantity Badges */
+        /* Stat-Card-Style Production Stage Quantities */
         .qty-badge {
             display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 800;
-            font-size: 1.6rem;
-            padding: 0.35rem 0.95rem;
-            border-radius: 8px;
-            min-width: 60px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 2.2rem;
+            line-height: 1;
+            padding: 0.25rem 0.85rem;
+            border-radius: 10px;
+            min-width: 65px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
 
         .qty-empty {
             display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 800;
-            font-size: 1.6rem;
-            color: rgba(255, 255, 255, 0.15);
-            padding: 0.35rem 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1.9rem;
+            color: rgba(255, 255, 255, 0.12);
+            padding: 0.25rem 0.85rem;
         }
 
-        .qty-smd { background: rgba(56, 189, 248, 0.25); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.5); }
-        .qty-pinsolder { background: rgba(251, 191, 36, 0.25); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.5); }
-        .qty-dipsolder { background: rgba(249, 115, 22, 0.25); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.5); }
-        .qty-cleaning { background: rgba(192, 132, 252, 0.25); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.5); }
-        .qty-testing { background: rgba(244, 63, 94, 0.28); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.5); }
-        .qty-stock { background: rgba(16, 185, 129, 0.28); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); }
-        .qty-delivery { background: rgba(129, 140, 248, 0.25); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.5); }
-
-        .qty-total {
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.3), rgba(99, 102, 241, 0.3));
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.5);
-            font-size: 1.6rem;
-            padding: 0.35rem 0.95rem;
+        .qty-smd { 
+            color: #38bdf8; 
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.45); 
+            background: rgba(56, 189, 248, 0.15); 
+            border: 1px solid rgba(56, 189, 248, 0.35); 
+        }
+        .qty-pinsolder { 
+            color: #fbbf24; 
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.45); 
+            background: rgba(251, 191, 36, 0.15); 
+            border: 1px solid rgba(251, 191, 36, 0.35); 
+        }
+        .qty-dipsolder { 
+            color: #f97316; 
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.45); 
+            background: rgba(249, 115, 22, 0.15); 
+            border: 1px solid rgba(249, 115, 22, 0.35); 
+        }
+        .qty-cleaning { 
+            color: #c084fc; 
+            text-shadow: 0 0 20px rgba(192, 132, 252, 0.45); 
+            background: rgba(192, 132, 252, 0.15); 
+            border: 1px solid rgba(192, 132, 252, 0.35); 
+        }
+        .qty-testing { 
+            color: #f43f5e; 
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.45); 
+            background: rgba(244, 63, 94, 0.18); 
+            border: 1px solid rgba(244, 63, 94, 0.4); 
+        }
+        .qty-stock { 
+            color: #34d399; 
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.45); 
+            background: rgba(16, 185, 129, 0.18); 
+            border: 1px solid rgba(16, 185, 129, 0.4); 
+        }
+        .qty-delivery { 
+            color: #818cf8; 
+            text-shadow: 0 0 20px rgba(129, 140, 248, 0.45); 
+            background: rgba(129, 140, 248, 0.15); 
+            border: 1px solid rgba(129, 140, 248, 0.35); 
         }
 
         /* Totals Footer Row */
@@ -455,10 +484,10 @@
         @media (min-width: 1600px) {
             body { padding: 1.25rem; }
             .header-title { font-size: 2.2rem; }
-            .stat-number { font-size: 3.4rem; }
-            .display-table td.board-cell { font-size: 1.5rem; }
-            .qty-badge { font-size: 1.7rem; padding: 0.4rem 1rem; min-width: 65px; }
-            .display-table th { font-size: 1.05rem; padding: 1.1rem 0.85rem; }
+            .display-table td.board-cell { font-size: 1.6rem; }
+            .qty-badge { font-size: 2.5rem; padding: 0.35rem 1rem; min-width: 75px; }
+            .qty-empty { font-size: 2.2rem; padding: 0.35rem 1rem; }
+            .display-table th { font-size: 1.15rem; padding: 1.1rem 0.85rem; }
         }
     </style>
 </head>
@@ -889,9 +918,9 @@
                     const totalQty = stageTotals[st] || 0;
                     if (totalQty > 0) {
                         const badgeClass = this.getStageBadgeClass(st);
-                        footHtml += `<td><span class="qty-badge ${badgeClass}" style="font-size: 1.6rem; padding: 0.4rem 0.95rem;">${totalQty}</span></td>`;
+                        footHtml += `<td><span class="qty-badge ${badgeClass}">${totalQty}</span></td>`;
                     } else {
-                        footHtml += `<td><span class="qty-empty" style="font-size: 1.4rem;">0</span></td>`;
+                        footHtml += `<td><span class="qty-empty">0</span></td>`;
                     }
                 });
 
