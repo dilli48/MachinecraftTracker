@@ -177,12 +177,144 @@
             }
         }
 
+        /* Formal Black & White Printable PDF Export Mode */
+        .formal-pdf-mode,
+        .formal-pdf-mode * {
+            box-shadow: none !important;
+            text-shadow: none !important;
+            backdrop-filter: none !important;
+        }
+
+        .formal-pdf-mode#pdf-report-container,
+        .formal-pdf-mode #pdf-report-container {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            font-family: 'Inter', Arial, sans-serif !important;
+            padding: 10px !important;
+        }
+
+        .formal-pdf-mode .report-header-card,
+        .formal-pdf-mode .report-section,
+        .formal-pdf-mode .stat-card {
+            background: #ffffff !important;
+            border: 1px solid #000000 !important;
+            border-radius: 4px !important;
+            color: #000000 !important;
+            margin-bottom: 12px !important;
+            padding: 10px 14px !important;
+        }
+
+        .formal-pdf-mode h1,
+        .formal-pdf-mode h2,
+        .formal-pdf-mode h3,
+        .formal-pdf-mode .section-title,
+        .formal-pdf-mode .stat-value,
+        .formal-pdf-mode .stat-label,
+        .formal-pdf-mode strong,
+        .formal-pdf-mode span,
+        .formal-pdf-mode div,
+        .formal-pdf-mode td,
+        .formal-pdf-mode th {
+            color: #000000 !important;
+        }
+
+        .formal-pdf-mode .stats-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 10px !important;
+            margin-bottom: 14px !important;
+        }
+
+        .formal-pdf-mode .stat-card {
+            text-align: center !important;
+            border: 1px solid #000000 !important;
+            padding: 8px !important;
+        }
+
+        .formal-pdf-mode .stat-icon-wrapper {
+            display: none !important;
+        }
+
+        .formal-pdf-mode table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            border: 1px solid #000000 !important;
+            margin-top: 6px !important;
+        }
+
+        .formal-pdf-mode th,
+        .formal-pdf-mode td {
+            border: 1px solid #000000 !important;
+            padding: 6px 8px !important;
+            color: #000000 !important;
+            font-size: 9pt !important;
+            text-align: left !important;
+        }
+
+        .formal-pdf-mode th {
+            background-color: #f1f5f9 !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            font-size: 8.5pt !important;
+            letter-spacing: 0.5px !important;
+            border-bottom: 2px solid #000000 !important;
+        }
+
+        .formal-pdf-mode .badge {
+            border: 1px solid #000000 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-weight: 700 !important;
+            padding: 2px 6px !important;
+            border-radius: 3px !important;
+            font-size: 8pt !important;
+        }
+
+        .formal-pdf-mode .metric-chip {
+            background: #ffffff !important;
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+            padding: 2px 6px !important;
+        }
+
+        .formal-pdf-mode .date-picker-bar,
+        .formal-pdf-mode .btn-pdf,
+        .formal-pdf-mode .header-actions {
+            display: none !important;
+        }
+
+        .formal-pdf-mode .print-only-header {
+            display: block !important;
+            text-align: center !important;
+            margin-bottom: 14px !important;
+            border-bottom: 2px solid #000000 !important;
+            padding-bottom: 8px !important;
+        }
+
+        .formal-pdf-mode .section-header {
+            border-bottom: 1px solid #000000 !important;
+            margin-bottom: 8px !important;
+            padding-bottom: 4px !important;
+        }
+
+        .formal-pdf-mode .section-count-badge {
+            border: 1px solid #000000 !important;
+            background: #f1f5f9 !important;
+            color: #000000 !important;
+        }
+
+        .formal-pdf-mode .part-number-cell {
+            color: #000000 !important;
+            font-weight: bold !important;
+        }
+
         /* Clean Print Styles for PDF Generation */
         @media print {
             body {
                 background: #ffffff !important;
                 color: #000000 !important;
-                font-size: 11pt;
+                font-size: 10pt;
+                font-family: Arial, sans-serif !important;
             }
             header, .header-actions, .date-picker-bar, .mobile-tab-switch, .btn, .btn-pdf, .status-indicator {
                 display: none !important;
@@ -194,45 +326,55 @@
             }
             .report-header-card, .report-section, .stat-card {
                 background: #ffffff !important;
-                border: 1px solid #cbd5e1 !important;
+                border: 1px solid #000000 !important;
                 color: #000000 !important;
                 box-shadow: none !important;
                 backdrop-filter: none !important;
                 page-break-inside: avoid;
+                border-radius: 0 !important;
+                margin-bottom: 12px !important;
             }
-            .section-title, h1, h2, h3, h4, .stat-value {
+            .section-title, h1, h2, h3, h4, .stat-value, strong, span, div, td, th {
                 color: #000000 !important;
             }
             table {
                 width: 100% !important;
-                border: 1px solid #cbd5e1 !important;
+                border-collapse: collapse !important;
+                border: 1px solid #000000 !important;
+            }
+            th, td {
+                border: 1px solid #000000 !important;
+                padding: 5px 8px !important;
+                color: #000000 !important;
+                font-size: 9pt !important;
             }
             th {
                 background-color: #f1f5f9 !important;
-                color: #0f172a !important;
-                border-bottom: 2px solid #cbd5e1 !important;
-            }
-            td {
-                color: #1e293b !important;
-                border-bottom: 1px solid #e2e8f0 !important;
+                color: #000000 !important;
+                border-bottom: 2px solid #000000 !important;
+                font-weight: bold !important;
             }
             .badge {
-                border: 1px solid #64748b !important;
-                color: #0f172a !important;
-                background: #f8fafc !important;
+                border: 1px solid #000000 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
             }
             .print-only-header {
                 display: block !important;
                 text-align: center;
-                margin-bottom: 20px;
-                border-bottom: 2px solid #0f172a;
-                padding-bottom: 10px;
+                margin-bottom: 15px;
+                border-bottom: 2px solid #000000;
+                padding-bottom: 8px;
+            }
+            .stat-icon-wrapper {
+                display: none !important;
             }
         }
 
         .print-only-header {
             display: none;
         }
+
     </style>
 </head>
 <body>
@@ -745,31 +887,37 @@
             tbody.innerHTML = html;
         }
 
-        // PDF Generation Function
+        // Formal PDF Generation Function
         function downloadPDFReport() {
             const container = document.getElementById('pdf-report-container');
+            
+            // Apply formal printable black & white mode with crisp table borders
+            container.classList.add('formal-pdf-mode');
+
             const opt = {
-                margin:       [10, 10, 10, 10], // top, left, bottom, right in mm
+                margin:       [8, 8, 8, 8],
                 filename:     `Machinecraft_Daily_Report_${currentDateStr}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
             // Use html2pdf if loaded, fallback to native window.print()
             if (window.html2pdf) {
-                // Temporary class for export styling
-                const originalBg = document.body.style.background;
                 html2pdf().set(opt).from(container).save().then(() => {
+                    container.classList.remove('formal-pdf-mode');
                     console.log("PDF export completed successfully!");
                 }).catch(err => {
                     console.warn("html2pdf failed, falling back to print dialog:", err);
+                    container.classList.remove('formal-pdf-mode');
                     window.print();
                 });
             } else {
+                container.classList.remove('formal-pdf-mode');
                 window.print();
             }
         }
+
 
         function escapeHtml(str) {
             if (!str) return '';
