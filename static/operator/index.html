@@ -137,11 +137,19 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="stock_part_select">Component Part Number *</label>
-                        <select id="stock_part_select" class="input-mobile" required onchange="app.onStockComponentChange()">
-                            <option value="" disabled selected>-- Select or Scan Barcode --</option>
+                        <label for="stock_type_select">Component Type *</label>
+                        <select id="stock_type_select" class="input-mobile" onchange="app.onStockTypeChange()">
+                            <option value="">-- All Component Types --</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label for="stock_part_select">Component Part Number *</label>
+                        <select id="stock_part_select" class="input-mobile" required onchange="app.onStockComponentChange()">
+                            <option value="" disabled selected>-- Select Part Number or Scan Barcode --</option>
+                        </select>
+                    </div>
+
 
                     <div id="stock-current-info" style="display: none; background: rgba(99,102,241,0.1); border: 1px solid var(--primary); padding: 0.85rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
                         <div style="font-size: 0.85rem; color: var(--text-secondary);">Current Inventory</div>

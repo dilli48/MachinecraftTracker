@@ -127,12 +127,13 @@ const app = {
                 this.componentsList.forEach(c => {
                     this.componentsMap[c.part_number] = c;
                 });
-                this.populateStockSelect();
+                this.populateStockTypeSelect();
             }
         } catch (e) {
             this.showToast('Network error: ' + e.message, 'danger');
         }
     },
+
 
     async fetchOperators() {
         try {
@@ -200,13 +201,55 @@ const app = {
 
 
 
-    populateStockSelect() {
-        const select = document.getElementById('stock_part_select');
-        select.innerHTML = '<option value="" disabled selected>-- Select or Scan Barcode --</option>';
-        this.componentsList.forEach(c => {
-            select.innerHTML += `<option value="${this.escapeHtml(c.part_number)}">${this.escapeHtml(c.part_number)} (Stock: ${c.current_stock})</option>`;
+    populateStockTypeSelect() {
+        const typeSelect = document.getElementById('stock_type_select');
+        if (!typeSelect) return;
+
+        const currentType = typeSelect.value;
+        const types = Array.from(new Set(this.componentsList.map(c => (c.type && c.type.trim()) ? c.type.trim() : 'Uncategorized'))).sort();
+
+        let html = '<option value="">-- All Component Types --</option>';
+        types.forEach(t => {
+            html += `<option value="${this.escapeHtml(t)}">${this.escapeHtml(t)}</option>`;
         });
+        typeSelect.innerHTML = html;
+
+        if (currentType && types.includes(currentType)) {
+            typeSelect.value = currentType;
+        }
+
+        this.onStockTypeChange();
     },
+
+    onStockTypeChange() {
+        const typeSelect = document.getElementById('stock_type_select');
+        const selectedType = typeSelect ? typeSelect.value : '';
+
+        let filtered = this.componentsList;
+        if (selectedType) {
+            if (selectedType === 'Uncategorized') {
+                filtered = this.componentsList.filter(c => !c.type || !c.type.trim());
+            } else {
+                filtered = this.componentsList.filter(c => c.type && c.type.trim() === selectedType);
+            }
+        }
+
+        this.populateStockSelect(filtered);
+    },
+
+    populateStockSelect(filteredList) {
+        const select = document.getElementById('stock_part_select');
+        if (!select) return;
+
+        const listToUse = filteredList || this.componentsList;
+        let html = '<option value="" disabled selected>-- Select Part Number or Scan Barcode --</option>';
+        listToUse.forEach(c => {
+            html += `<option value="${this.escapeHtml(c.part_number)}">${this.escapeHtml(c.part_number)} (Stock: ${c.current_stock})</option>`;
+        });
+        select.innerHTML = html;
+        this.onStockComponentChange();
+    },
+
 
     switchTab(tabName) {
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
@@ -315,7 +358,12 @@ const app = {
             if (res.ok) {
                 this.showToast(`Stock updated: ${partNumber} is now ${newStock}`, 'success');
                 document.getElementById('stock_comments').value = '';
+                const savedType = document.getElementById('stock_type_select') ? document.getElementById('stock_type_select').value : '';
                 await this.fetchComponents();
+                if (savedType) {
+                    document.getElementById('stock_type_select').value = savedType;
+                    this.onStockTypeChange();
+                }
                 partSelect.value = partNumber;
                 this.onStockComponentChange();
             } else {
@@ -369,12 +417,25 @@ const app = {
 
         if (matchedPart) {
             this.switchTab('stock');
-            document.getElementById('stock_part_select').value = matchedPart.part_number;
+
+            const compType = (matchedPart.type && matchedPart.type.trim()) ? matchedPart.type.trim() : 'Uncategorized';
+            const typeSelect = document.getElementById('stock_type_select');
+            if (typeSelect) {
+                const optionExists = Array.from(typeSelect.options).some(opt => opt.value === compType);
+                typeSelect.value = optionExists ? compType : '';
+                this.onStockTypeChange();
+            }
+
+            const partSelect = document.getElementById('stock_part_select');
+            if (partSelect) {
+                partSelect.value = matchedPart.part_number;
+            }
             this.onStockComponentChange();
         } else {
             this.showToast(`No component found for part number: ${scannedCode}`, 'danger');
         }
     },
+
 
     showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
