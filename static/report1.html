@@ -220,7 +220,7 @@
 
         .formal-pdf-mode .stats-grid {
             display: grid !important;
-            grid-template-columns: repeat(4, 1fr) !important;
+            grid-template-columns: repeat(3, 1fr) !important;
             gap: 10px !important;
             margin-bottom: 14px !important;
         }
@@ -486,17 +486,8 @@
                             <i class="fa-solid fa-vial-circle-check"></i>
                         </div>
                     </div>
-
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <div class="stat-label">Daily QA Pass Rate</div>
-                            <div class="stat-value" id="stat-pass-rate">0%</div>
-                        </div>
-                        <div class="stat-icon-wrapper icon-emerald">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-                    </div>
                 </div>
+
 
                 <!-- Section 1: Operator Production Board Logs -->
                 <section class="report-section" id="sec-operator-logs">
@@ -708,16 +699,8 @@
 
             // Testing reports count
             document.getElementById('stat-tests-count').innerText = testLogs.length.toLocaleString();
-
-            // Pass rate
-            if (testLogs.length === 0) {
-                document.getElementById('stat-pass-rate').innerText = '100%';
-            } else {
-                const passedCount = testLogs.filter(t => (t.overall_status || '').toUpperCase() === 'PASS').length;
-                const passPct = Math.round((passedCount / testLogs.length) * 100);
-                document.getElementById('stat-pass-rate').innerText = `${passPct}%`;
-            }
         }
+
 
         // Render Section 1: Production Stage Logs
         function renderProductionLogs(logs) {
