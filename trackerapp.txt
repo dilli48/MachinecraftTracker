@@ -131,6 +131,11 @@ OVH CLoud
 ssh login with command 	ssh ubuntu@51.79.250.6
 and password	:	2008@Batch
 
+Raspberry pi:
+ssh: 
+Username:machinecraft
+Password:2008
+
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBdJHIdxCPrZ5kLtd4co6RZHvE6dhPQvmJdeF7xT2GAI dilli.image@gmail.com 
 
 cd ~/MachinecraftTracker

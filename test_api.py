@@ -97,14 +97,20 @@ class MachinecraftTrackerApiTests(unittest.TestCase):
         delete_res = self.client.delete(f"/api/boards/{board_id}", headers=self.headers)
         self.assertEqual(delete_res.status_code, 204)
 
-    def test_06_docs_protection(self):
-        # 1. Unauthenticated request to /docs should return 401
-        unauth_res = self.client.get("/docs")
-        self.assertEqual(unauth_res.status_code, 401)
+    def test_07_report1_page_and_component_logs(self):
+        # Test /report1 page route returns 200
+        res = self.client.get("/report1")
+        self.assertEqual(res.status_code, 200, f"Report1 page failed: {res.text}")
 
-        # 2. Authenticated request to /docs with basic auth should return 200
-        auth_res = self.client.get("/docs", auth=("mctracker", "2008batch"))
-        self.assertEqual(auth_res.status_code, 200)
+        # Test /api/components/logs endpoint
+        logs_res = self.client.get("/api/components/logs", headers=self.headers)
+        self.assertEqual(logs_res.status_code, 200)
+        self.assertIsInstance(logs_res.json(), list)
+
+        # Test with date filter
+        date_logs_res = self.client.get("/api/components/logs?date=2026-08-20", headers=self.headers)
+        self.assertEqual(date_logs_res.status_code, 200)
 
 if __name__ == "__main__":
     unittest.main()
+

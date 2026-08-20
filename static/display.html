@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,11 @@
     <meta name="description" content="Live 24-inch Shop Floor Production Stage Inventory Display Matrix">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         :root {
             --bg-dark: #050811;
@@ -24,7 +27,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            
+
             /* Stage Color System */
             --color-empty: #94a3b8;
             --color-smd: #38bdf8;
@@ -196,9 +199,20 @@
         }
 
         @keyframes pulse-ring {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
         }
 
         /* Stat Summary Cards */
@@ -231,10 +245,21 @@
             height: 100%;
         }
 
-        .stat-card.wip::before { background: var(--primary); }
-        .stat-card.assembly::before { background: var(--warning); }
-        .stat-card.testing::before { background: var(--color-testing); }
-        .stat-card.stock::before { background: var(--success); }
+        .stat-card.wip::before {
+            background: var(--primary);
+        }
+
+        .stat-card.assembly::before {
+            background: var(--warning);
+        }
+
+        .stat-card.testing::before {
+            background: var(--color-testing);
+        }
+
+        .stat-card.stock::before {
+            background: var(--success);
+        }
 
         .stat-info {
             display: flex;
@@ -257,10 +282,25 @@
             margin-top: 0.2rem;
         }
 
-        .stat-card.wip .stat-number { color: #38bdf8; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
-        .stat-card.assembly .stat-number { color: #fbbf24; text-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
-        .stat-card.testing .stat-number { color: #f43f5e; text-shadow: 0 0 20px rgba(244, 63, 94, 0.4); }
-        .stat-card.stock .stat-number { color: #34d399; text-shadow: 0 0 20px rgba(52, 211, 153, 0.4); }
+        .stat-card.wip .stat-number {
+            color: #38bdf8;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .stat-card.assembly .stat-number {
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .stat-card.testing .stat-number {
+            color: #f43f5e;
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+        }
+
+        .stat-card.stock .stat-number {
+            color: #34d399;
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
+        }
 
         .stat-icon {
             font-size: 2.2rem;
@@ -394,14 +434,37 @@
             text-shadow: none;
         }
 
-        .qty-emptyboard { color: #2dd4bf; }
-        .qty-smd { color: #38bdf8; }
-        .qty-pinsolder { color: #fbbf24; }
-        .qty-dipsolder { color: #f97316; }
-        .qty-cleaning { color: #c084fc; }
-        .qty-testing { color: #f43f5e; }
-        .qty-stock { color: #34d399; }
-        .qty-delivery { color: #818cf8; }
+        .qty-emptyboard {
+            color: #2dd4bf;
+        }
+
+        .qty-smd {
+            color: #38bdf8;
+        }
+
+        .qty-pinsolder {
+            color: #fbbf24;
+        }
+
+        .qty-dipsolder {
+            color: #f97316;
+        }
+
+        .qty-cleaning {
+            color: #c084fc;
+        }
+
+        .qty-testing {
+            color: #f43f5e;
+        }
+
+        .qty-stock {
+            color: #34d399;
+        }
+
+        .qty-delivery {
+            color: #818cf8;
+        }
 
         /* Totals Footer Row */
         .display-table tfoot tr {
@@ -451,15 +514,34 @@
 
         /* Responsive Adjustments for 24" Displays */
         @media (min-width: 1600px) {
-            body { padding: 1.25rem; }
-            .header-title { font-size: 2.2rem; }
-            .display-table td.board-cell { font-size: 1.6rem; }
-            .qty-badge { font-size: 2.5rem; }
-            .qty-empty { font-size: 2.2rem; }
-            .display-table th { font-size: 1.15rem; padding: 1.1rem 0.85rem; }
+            body {
+                padding: 1.25rem;
+            }
+
+            .header-title {
+                font-size: 2.2rem;
+            }
+
+            .display-table td.board-cell {
+                font-size: 1.6rem;
+            }
+
+            .qty-badge {
+                font-size: 2.5rem;
+            }
+
+            .qty-empty {
+                font-size: 2.2rem;
+            }
+
+            .display-table th {
+                font-size: 1.15rem;
+                padding: 1.1rem 0.85rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Top Navigation & Clock Bar -->
@@ -467,7 +549,7 @@
         <div class="header-title-box">
             <div class="brand-logo-badge">MC</div>
             <div>
-                <h1 class="header-title">ProductionData</h1>
+                <h1 class="header-title">Production Data</h1>
                 <div class="header-subtitle">Live Stage Tracking</div>
             </div>
         </div>
@@ -507,12 +589,16 @@
             <div class="matrix-header-title">
                 <i class="fa-solid fa-table-cells" style="color: var(--primary);"></i>
                 <span id="current-line-title">ALL PRODUCTION BOARDS</span>
-                <span id="page-indicator-badge" class="cat-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); display: none; font-size: 0.95rem; font-weight: 700; margin-left: 0.5rem;">Page 1/1</span>
+                <span id="page-indicator-badge" class="cat-badge"
+                    style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); display: none; font-size: 0.95rem; font-weight: 700; margin-left: 0.5rem;">Page
+                    1/1</span>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div id="page-nav-btns" style="display: none; gap: 0.4rem;">
-                    <button class="toggle-btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" onclick="displayApp.prevPage()"><i class="fa-solid fa-chevron-left"></i> Prev</button>
-                    <button class="toggle-btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" onclick="displayApp.nextPage()">Next <i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="toggle-btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;"
+                        onclick="displayApp.prevPage()"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                    <button class="toggle-btn" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;"
+                        onclick="displayApp.nextPage()">Next <i class="fa-solid fa-chevron-right"></i></button>
                 </div>
                 <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;" id="last-updated-text">
                     Last updated: Just now
@@ -541,7 +627,8 @@
 
     <!-- Footer Bar -->
     <footer class="footer-bar">
-        <div><i class="fa-solid fa-circle-info"></i> Machine Craft Shop Floor Display System v2.0 • Auto-refreshes every 8 seconds</div>
+        <div><i class="fa-solid fa-circle-info"></i> Machine Craft Shop Floor Display System v2.0 • Auto-refreshes every
+            8 seconds</div>
         <div id="cycle-status-text">Mode: Static View</div>
     </footer>
 
@@ -588,7 +675,7 @@
                 return matrix.sort((a, b) => {
                     const catA = (a.production_line_category || '').trim();
                     const catB = (b.production_line_category || '').trim();
-                    
+
                     const orderA = this.getLineCategoryOrder(catA);
                     const orderB = this.getLineCategoryOrder(catB);
 
@@ -759,8 +846,8 @@
                 }
 
                 if (statusText && this.autoCycle) {
-                    statusText.innerText = totalPages > 1 
-                        ? `Mode: Auto-cycling Pages (Page ${this.currentPage + 1}/${totalPages} • ${totalBoards} Boards)` 
+                    statusText.innerText = totalPages > 1
+                        ? `Mode: Auto-cycling Pages (Page ${this.currentPage + 1}/${totalPages} • ${totalBoards} Boards)`
                         : `Mode: Auto-cycle ON (${totalBoards} Boards Total)`;
                 }
 
@@ -771,8 +858,8 @@
                 // Render visible rows for this page
                 visibleRows.forEach(row => {
                     const tr = document.createElement('tr');
-                    
-                    const catTag = row.production_line_category 
+
+                    const catTag = row.production_line_category
                         ? `<div style="font-size: 0.72rem; color: var(--primary); font-weight: 700; text-transform: uppercase; margin-top: 0.15rem; letter-spacing: 0.5px; opacity: 0.9;">${this.escapeHtml(row.production_line_category)}</div>`
                         : '';
 
@@ -824,4 +911,5 @@
         window.addEventListener('DOMContentLoaded', () => displayApp.init());
     </script>
 </body>
+
 </html>

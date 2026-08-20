@@ -23,6 +23,21 @@ class Component(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class ComponentLog(Base):
+    __tablename__ = "component_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    part_number = Column(String(100), nullable=False, index=True)
+    change_type = Column(String(50), nullable=False, default="STOCK_UPDATE")
+    old_stock = Column(Integer, nullable=True)
+    new_stock = Column(Integer, nullable=True)
+    quantity_change = Column(Integer, nullable=True)
+    operator_name = Column(String(100), nullable=True)
+    comments = Column(Text, nullable=True)
+
+
+
 class Operator(Base):
     __tablename__ = "operators"
 
@@ -140,6 +155,21 @@ class ComponentResponse(ComponentBase):
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ComponentLogResponse(BaseModel):
+    id: int
+    timestamp: Optional[datetime] = None
+    part_number: str
+    change_type: str
+    old_stock: Optional[int] = None
+    new_stock: Optional[int] = None
+    quantity_change: Optional[int] = None
+    operator_name: Optional[str] = None
+    comments: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 
 # Operator Schemas

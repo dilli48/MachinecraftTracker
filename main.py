@@ -168,6 +168,15 @@ def read_shopfloor_display():
         return FileResponse(display_file)
     raise HTTPException(status_code=404, detail="Shop Floor Display UI not found")
 
+@app.get("/report1", tags=["Daily Reports"])
+@app.get("/reports", tags=["Daily Reports"])
+def read_report1():
+    report_file = os.path.join(static_dir, "report1.html")
+    if os.path.exists(report_file):
+        return FileResponse(report_file)
+    raise HTTPException(status_code=404, detail="Daily Report UI (report1) not found")
+
+
 
 security_basic = HTTPBasic()
 security_bearer = HTTPBearer(auto_error=False)
@@ -355,6 +364,45 @@ def get_components(
     return query.all()
 
 
+@app.get("/api/components/logs", response_model=List[models.ComponentLogResponse], tags=["Components"])
+def get_component_logs(
+    log_date: Optional[str] = Query(None, alias="date", description="Filter by YYYY-MM-DD date"),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.ComponentLog)
+    if log_date:
+        try:
+            target_date = datetime.strptime(log_date.strip(), "%Y-%m-%d").date()
+            query = query.filter(func.date(models.ComponentLog.timestamp) == target_date)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid date format. Expected YYYY-MM-DD.")
+    logs = query.order_by(models.ComponentLog.timestamp.desc()).all()
+
+    if log_date and not logs:
+        try:
+            target_date = datetime.strptime(log_date.strip(), "%Y-%m-%d").date()
+            comp_query = db.query(models.Component).filter(func.date(models.Component.created_at) == target_date)
+            created_comps = comp_query.all()
+            fallback_logs = []
+            for c in created_comps:
+                fallback_logs.append(models.ComponentLogResponse(
+                    id=c.id,
+                    timestamp=c.created_at,
+                    part_number=c.part_number,
+                    change_type="CREATED",
+                    old_stock=0,
+                    new_stock=c.current_stock,
+                    quantity_change=c.current_stock,
+                    operator_name="System",
+                    comments=c.comments or f"Created component ({c.type or 'Part'})"
+                ))
+            return fallback_logs
+        except Exception:
+            pass
+
+    return logs
+
+
 @app.post("/api/components", response_model=models.ComponentResponse, status_code=status.HTTP_201_CREATED, tags=["Components"])
 def create_component(
     component_in: models.ComponentCreate,
@@ -372,6 +420,22 @@ def create_component(
     db.add(component)
     db.commit()
     db.refresh(component)
+
+    try:
+        log_entry = models.ComponentLog(
+            part_number=component.part_number,
+            change_type="CREATED",
+            old_stock=0,
+            new_stock=component.current_stock,
+            quantity_change=component.current_stock,
+            operator_name="System Admin",
+            comments=component.comments or f"Initial component registration"
+        )
+        db.add(log_entry)
+        db.commit()
+    except Exception as log_err:
+        print("Warning creating component log:", log_err)
+
     return component
 
 
@@ -405,12 +469,33 @@ def update_component(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Component '{part_number}' not found."
         )
+    old_stock = component.current_stock
     update_data = component_in.model_dump(exclude_unset=True)
     for field, val in update_data.items():
         setattr(component, field, val)
     db.commit()
     db.refresh(component)
+
+    try:
+        new_stock = component.current_stock
+        stock_change = new_stock - old_stock if old_stock is not None else 0
+        change_type = "STOCK_UPDATE" if stock_change != 0 else "DETAILS_UPDATE"
+        log_entry = models.ComponentLog(
+            part_number=component.part_number,
+            change_type=change_type,
+            old_stock=old_stock,
+            new_stock=new_stock,
+            quantity_change=stock_change,
+            operator_name="System Admin",
+            comments=component.comments or f"Inventory updated"
+        )
+        db.add(log_entry)
+        db.commit()
+    except Exception as log_err:
+        print("Warning creating component log:", log_err)
+
     return component
+
 
 
 @app.delete("/api/components/{part_number}", status_code=status.HTTP_204_NO_CONTENT, tags=["Components"])

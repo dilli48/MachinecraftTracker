@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machinecraft Tracker - Daily Operational Report (Report1)</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf Library for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Custom styles for Report1 Page */
+        .report-header-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.75rem;
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .date-picker-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .date-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-input-custom {
+            background: #0f172a;
+            color: #fff;
+            border: 1px solid var(--primary);
+            padding: 0.5rem 0.85rem;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .date-input-custom::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.65rem 1.35rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+            transition: var(--transition);
+        }
+
+        .btn-pdf:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .report-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.75rem;
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .section-count-badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            padding: 0.2rem 0.65rem;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .no-data-msg {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .no-data-msg i {
+            font-size: 2rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .metric-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Responsive Mobile Switching Tabs */
+        .mobile-tab-switch {
+            display: none;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 0.75rem 1rem;
+            }
+            main {
+                padding: 1rem;
+            }
+            .report-header-card {
+                padding: 1.25rem;
+            }
+            .date-picker-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .date-controls {
+                justify-content: space-between;
+            }
+            .btn-pdf {
+                width: 100%;
+                justify-content: center;
+            }
+            .mobile-tab-switch {
+                display: flex;
+            }
+        }
+
+        /* Clean Print Styles for PDF Generation */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt;
+            }
+            header, .header-actions, .date-picker-bar, .mobile-tab-switch, .btn, .btn-pdf, .status-indicator {
+                display: none !important;
+            }
+            main {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .report-header-card, .report-section, .stat-card {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                page-break-inside: avoid;
+            }
+            .section-title, h1, h2, h3, h4, .stat-value {
+                color: #000000 !important;
+            }
+            table {
+                width: 100% !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+            th {
+                background-color: #f1f5f9 !important;
+                color: #0f172a !important;
+                border-bottom: 2px solid #cbd5e1 !important;
+            }
+            td {
+                color: #1e293b !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+            .badge {
+                border: 1px solid #64748b !important;
+                color: #0f172a !important;
+                background: #f8fafc !important;
+            }
+            .print-only-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #0f172a;
+                padding-bottom: 10px;
+            }
+        }
+
+        .print-only-header {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-chart-column"></i>
+                    </div>
+                    <div>
+                        <div class="brand-title">Machinecraft Tracker - Daily Operational Report</div>
+                        <div style="font-size: 0.78rem; color: var(--text-dim);">Operator Board Logs, Component Inventory & QA Testing Updates</div>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <a href="/tracker" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <a href="/display" target="_blank" class="btn btn-secondary" style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3);">
+                        <i class="fa-solid fa-desktop"></i> Shop Floor 📺
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Report Container Element for PDF Export -->
+            <div id="pdf-report-container">
+
+                <!-- Header Print Title (Visible only in PDF/Print) -->
+                <div class="print-only-header">
+                    <h1 style="font-size: 20pt; margin-bottom: 5px;">MACHINECRAFT INDUSTRIES</h1>
+                    <h2 style="font-size: 14pt; color: #475569; font-weight: normal; margin-bottom: 5px;">Daily Production, Inventory & Testing Operational Report</h2>
+                    <div id="print-date-subtitle" style="font-size: 11pt; font-weight: bold; color: #0284c7;"></div>
+                </div>
+
+                <!-- Report Title & Date Selection Bar -->
+                <div class="report-header-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 700; margin-bottom: 0.25rem;">
+                                <i class="fa-solid fa-calendar-day"></i> Selected Report Date
+                            </div>
+                            <h1 id="selected-date-display" style="font-size: 1.85rem; font-weight: 800; color: #ffffff;">
+                                Loading Report...
+                            </h1>
+                        </div>
+
+                        <button class="btn-pdf" onclick="downloadPDFReport()">
+                            <i class="fa-solid fa-file-pdf" style="font-size: 1.15rem;"></i> Download PDF Report
+                        </button>
+                    </div>
+
+                    <!-- Date Picker Control Bar -->
+                    <div class="date-picker-bar">
+                        <div class="date-controls">
+                            <button class="btn btn-secondary" onclick="shiftDate(-1)" title="Previous Day">
+                                <i class="fa-solid fa-chevron-left"></i> Prev Day
+                            </button>
+                            <button class="btn btn-secondary" onclick="setTodayDate()" title="Today">
+                                Today
+                            </button>
+                            <button class="btn btn-secondary" onclick="shiftDate(1)" title="Next Day">
+                                Next Day <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <label for="report-date-input" style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">
+                                Select Specific Date:
+                            </label>
+                            <input type="date" id="report-date-input" class="date-input-custom" onchange="onDateInputChange(event)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stat Metrics Summary Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="stat-label">Operator Board Units Moved</div>
+                            <div class="stat-value" id="stat-boards-moved">0</div>
+                        </div>
+                        <div class="stat-icon-wrapper icon-cyan">
+                            <i class="fa-solid fa-industry"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="stat-label">Component Updates Logged</div>
+                            <div class="stat-value" id="stat-inventory-updates">0</div>
+                        </div>
+                        <div class="stat-icon-wrapper icon-amber">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="stat-label">Testing Reports Logged</div>
+                            <div class="stat-value" id="stat-tests-count">0</div>
+                        </div>
+                        <div class="stat-icon-wrapper icon-blue">
+                            <i class="fa-solid fa-vial-circle-check"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="stat-label">Daily QA Pass Rate</div>
+                            <div class="stat-value" id="stat-pass-rate">0%</div>
+                        </div>
+                        <div class="stat-icon-wrapper icon-emerald">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 1: Operator Production Board Logs -->
+                <section class="report-section" id="sec-operator-logs">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fa-solid fa-clipboard-user" style="color: var(--primary);"></i>
+                            <span>1. Operators Production Board Stage Logs</span>
+                            <span class="section-count-badge" id="count-prod-logs">0 logs</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-dim);" id="sub-prod-quantity">
+                            Total Quantity: 0 units
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Operator</th>
+                                    <th>Production Line</th>
+                                    <th>Product Board</th>
+                                    <th>Previous Stage</th>
+                                    <th>Current Stage</th>
+                                    <th style="text-align: right;">Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prod-logs-tbody">
+                                <tr><td colspan="7" class="no-data-msg">Loading production logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Section 2: Component Inventory Updates -->
+                <section class="report-section" id="sec-component-logs">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fa-solid fa-boxes-packing" style="color: var(--warning);"></i>
+                            <span>2. Component Inventory Updates</span>
+                            <span class="section-count-badge" id="count-comp-logs" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border-color: rgba(245, 158, 11, 0.4);">0 updates</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-dim);" id="sub-comp-parts">
+                            Unique Parts Modified: 0
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Part Number</th>
+                                    <th>Change Action</th>
+                                    <th>Old Stock</th>
+                                    <th>Stock Delta</th>
+                                    <th>New Stock</th>
+                                    <th>Operator / Source</th>
+                                    <th>Comments / Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comp-logs-tbody">
+                                <tr><td colspan="8" class="no-data-msg">Loading component inventory logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Section 3: Testing & Quality Control Reports -->
+                <section class="report-section" id="sec-testing-logs">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fa-solid fa-microchip" style="color: var(--accent-cyan);"></i>
+                            <span>3. Board Testing & QA Audit Reports</span>
+                            <span class="section-count-badge" id="count-test-logs" style="background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.4);">0 reports</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-dim);" id="sub-test-breakdown">
+                            PASSED: 0 | REJECTED: 0
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Board Serial No.</th>
+                                    <th>Product Model</th>
+                                    <th>Test Type</th>
+                                    <th>QA Technician</th>
+                                    <th>Status</th>
+                                    <th>Test Measurements (JSON Summary)</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="test-logs-tbody">
+                                <tr><td colspan="8" class="no-data-msg">Loading board testing reports...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Footer Summary (Print / PDF Only) -->
+                <div style="font-size: 9pt; color: #64748b; text-align: center; margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 10px;" class="print-only">
+                    Machinecraft Jacquard Tracker - Automated Daily Operations Report | Generated on <span id="pdf-generated-timestamp"></span>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // Report1 Page Logic
+        let currentDateStr = getTodayISOString();
+
+        function getTodayISOString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatDateReadable(isoDateStr) {
+            if (!isoDateStr) return '';
+            const [y, m, d] = isoDateStr.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return dateObj.toLocaleDateString('en-US', options);
+        }
+
+        function formatTimeOnly(isoTimeStr) {
+            if (!isoTimeStr) return '--:--';
+            try {
+                const dateObj = new Date(isoTimeStr);
+                return dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            } catch (e) {
+                return isoTimeStr;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('report-date-input');
+            dateInput.value = currentDateStr;
+            loadReportForDate(currentDateStr);
+        });
+
+        function onDateInputChange(e) {
+            const val = e.target.value;
+            if (val) {
+                currentDateStr = val;
+                loadReportForDate(currentDateStr);
+            }
+        }
+
+        function setTodayDate() {
+            currentDateStr = getTodayISOString();
+            document.getElementById('report-date-input').value = currentDateStr;
+            loadReportForDate(currentDateStr);
+        }
+
+        function shiftDate(offsetDays) {
+            const [y, m, d] = currentDateStr.split('-').map(Number);
+            const dt = new Date(y, m - 1, d);
+            dt.setDate(dt.getDate() + offsetDays);
+            
+            const year = dt.getFullYear();
+            const month = String(dt.getMonth() + 1).padStart(2, '0');
+            const day = String(dt.getDate()).padStart(2, '0');
+            
+            currentDateStr = `${year}-${month}-${day}`;
+            document.getElementById('report-date-input').value = currentDateStr;
+            loadReportForDate(currentDateStr);
+        }
+
+        async function loadReportForDate(dateStr) {
+            // Update Title Display
+            const readable = formatDateReadable(dateStr);
+            document.getElementById('selected-date-display').innerText = readable;
+            document.getElementById('print-date-subtitle').innerText = `Date: ${readable} (${dateStr})`;
+            document.getElementById('pdf-generated-timestamp').innerText = new Date().toLocaleString();
+
+            // Fetch data concurrently from API endpoints
+            try {
+                const [prodRes, compRes, testRes] = await Promise.all([
+                    fetch(`/api/production/logs?date=${dateStr}`).then(r => r.ok ? r.json() : []),
+                    fetch(`/api/components/logs?date=${dateStr}`).then(r => r.ok ? r.json() : []),
+                    fetch(`/api/testing/reports?date=${dateStr}`).then(r => r.ok ? r.json() : [])
+                ]);
+
+                renderProductionLogs(prodRes);
+                renderComponentLogs(compRes);
+                renderTestingLogs(testRes);
+
+                updateGlobalStats(prodRes, compRes, testRes);
+            } catch (err) {
+                console.error("Error loading daily report data:", err);
+            }
+        }
+
+        function updateGlobalStats(prodLogs, compLogs, testLogs) {
+            // Production moved quantity
+            const totalQtyMoved = prodLogs.reduce((acc, item) => acc + (item.quantity || 0), 0);
+            document.getElementById('stat-boards-moved').innerText = totalQtyMoved.toLocaleString();
+
+            // Inventory updates count
+            document.getElementById('stat-inventory-updates').innerText = compLogs.length.toLocaleString();
+
+            // Testing reports count
+            document.getElementById('stat-tests-count').innerText = testLogs.length.toLocaleString();
+
+            // Pass rate
+            if (testLogs.length === 0) {
+                document.getElementById('stat-pass-rate').innerText = '100%';
+            } else {
+                const passedCount = testLogs.filter(t => (t.overall_status || '').toUpperCase() === 'PASS').length;
+                const passPct = Math.round((passedCount / testLogs.length) * 100);
+                document.getElementById('stat-pass-rate').innerText = `${passPct}%`;
+            }
+        }
+
+        // Render Section 1: Production Stage Logs
+        function renderProductionLogs(logs) {
+            const tbody = document.getElementById('prod-logs-tbody');
+            const countBadge = document.getElementById('count-prod-logs');
+            const subTitle = document.getElementById('sub-prod-quantity');
+
+            countBadge.innerText = `${logs.length} ${logs.length === 1 ? 'log' : 'logs'}`;
+            const totalQty = logs.reduce((acc, item) => acc + (item.quantity || 0), 0);
+            subTitle.innerText = `Total Quantity Moved: ${totalQty.toLocaleString()} units`;
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data-msg">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <div>No operator production board logs recorded for this date.</div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            let html = '';
+            logs.forEach(log => {
+                const timeStr = formatTimeOnly(log.timestamp);
+                html += `
+                    <tr>
+                        <td style="font-weight: 600; color: var(--primary); white-space: nowrap;">
+                            <i class="fa-regular fa-clock"></i> ${timeStr}
+                        </td>
+                        <td>
+                            <strong style="color: var(--text-main);"><i class="fa-solid fa-user-gear"></i> ${escapeHtml(log.operator_name || 'Operator')}</strong>
+                        </td>
+                        <td>
+                            <span class="metric-chip"><i class="fa-solid fa-layer-group"></i> ${escapeHtml(log.production_line || 'JACQUARD')}</span>
+                        </td>
+                        <td>
+                            <strong style="font-family: 'Outfit', sans-serif; color: #ffffff;">${escapeHtml(log.board_name || 'Board')}</strong>
+                        </td>
+                        <td>
+                            <span class="badge badge-info">${escapeHtml(log.previous_stage || 'Start')}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-success"><i class="fa-solid fa-arrow-right"></i> ${escapeHtml(log.current_stage || 'Next Stage')}</span>
+                        </td>
+                        <td style="text-align: right; font-weight: 700; font-size: 1.05rem; color: #ffffff;">
+                            ${log.quantity || 1}
+                        </td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Render Section 2: Component Inventory Logs
+        function renderComponentLogs(logs) {
+            const tbody = document.getElementById('comp-logs-tbody');
+            const countBadge = document.getElementById('count-comp-logs');
+            const subTitle = document.getElementById('sub-comp-parts');
+
+            countBadge.innerText = `${logs.length} ${logs.length === 1 ? 'update' : 'updates'}`;
+            const uniqueParts = new Set(logs.map(l => l.part_number)).size;
+            subTitle.innerText = `Unique Parts Updated: ${uniqueParts}`;
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="no-data-msg">
+                            <i class="fa-solid fa-box-open"></i>
+                            <div>No component inventory updates recorded for this date.</div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            let html = '';
+            logs.forEach(log => {
+                const timeStr = formatTimeOnly(log.timestamp);
+                const changeType = (log.change_type || 'STOCK_UPDATE').toUpperCase();
+                let badgeClass = 'badge-info';
+                if (changeType === 'CREATED') badgeClass = 'badge-success';
+                if (changeType === 'STOCK_UPDATE') badgeClass = 'badge-warning';
+
+                const delta = log.quantity_change ?? 0;
+                let deltaDisplay = `${delta}`;
+                if (delta > 0) deltaDisplay = `+${delta}`;
+
+                html += `
+                    <tr>
+                        <td style="font-weight: 600; color: var(--warning); white-space: nowrap;">
+                            <i class="fa-regular fa-clock"></i> ${timeStr}
+                        </td>
+                        <td>
+                            <span class="part-number-cell" style="color: #38bdf8;">${escapeHtml(log.part_number)}</span>
+                        </td>
+                        <td>
+                            <span class="badge ${badgeClass}">${escapeHtml(changeType)}</span>
+                        </td>
+                        <td style="color: var(--text-dim);">${log.old_stock !== null ? log.old_stock : '--'}</td>
+                        <td style="font-weight: 700; color: ${delta >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                            ${deltaDisplay}
+                        </td>
+                        <td style="font-weight: 700; color: #ffffff;">${log.new_stock !== null ? log.new_stock : '--'}</td>
+                        <td><i class="fa-solid fa-user-check"></i> ${escapeHtml(log.operator_name || 'System Admin')}</td>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(log.comments || 'N/A')}</td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Render Section 3: Testing Reports
+        function renderTestingLogs(logs) {
+            const tbody = document.getElementById('test-logs-tbody');
+            const countBadge = document.getElementById('count-test-logs');
+            const subTitle = document.getElementById('sub-test-breakdown');
+
+            countBadge.innerText = `${logs.length} ${logs.length === 1 ? 'report' : 'reports'}`;
+            const passedCount = logs.filter(t => (t.overall_status || '').toUpperCase() === 'PASS').length;
+            const failedCount = logs.filter(t => (t.overall_status || '').toUpperCase() === 'FAIL').length;
+            subTitle.innerText = `PASSED: ${passedCount} | REJECTED: ${failedCount}`;
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="no-data-msg">
+                            <i class="fa-solid fa-vial"></i>
+                            <div>No board testing reports logged for this date.</div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            let html = '';
+            logs.forEach(log => {
+                const timeStr = formatTimeOnly(log.test_timestamp);
+                const status = (log.overall_status || 'PASS').toUpperCase();
+                const isPass = status === 'PASS';
+                const badgeClass = isPass ? 'badge-success' : 'badge-danger';
+                const statusIcon = isPass ? 'fa-circle-check' : 'fa-triangle-exclamation';
+
+                let jsonSummary = '';
+                if (log.test_data && typeof log.test_data === 'object') {
+                    const keys = Object.keys(log.test_data);
+                    jsonSummary = keys.slice(0, 3).map(k => `${k}: ${log.test_data[k]}`).join(', ');
+                    if (keys.length > 3) jsonSummary += '...';
+                }
+
+                html += `
+                    <tr>
+                        <td style="font-weight: 600; color: var(--accent-cyan); white-space: nowrap;">
+                            <i class="fa-regular fa-clock"></i> ${timeStr}
+                        </td>
+                        <td>
+                            <strong style="font-family: monospace; color: #ffffff;">${escapeHtml(log.board_serial_number)}</strong>
+                        </td>
+                        <td>${escapeHtml(log.product_name || 'Board')}</td>
+                        <td><span class="metric-chip">${escapeHtml(log.test_type)}</span></td>
+                        <td><i class="fa-solid fa-user-astronaut"></i> ${escapeHtml(log.operator_name || 'QA Tech')}</td>
+                        <td>
+                            <span class="badge ${badgeClass}"><i class="fa-solid ${statusIcon}"></i> ${status}</span>
+                        </td>
+                        <td style="font-size: 0.82rem; font-family: monospace; color: #38bdf8;">
+                            ${escapeHtml(jsonSummary || 'JSON metrics attached')}
+                        </td>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(log.remarks || 'No remarks')}</td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // PDF Generation Function
+        function downloadPDFReport() {
+            const container = document.getElementById('pdf-report-container');
+            const opt = {
+                margin:       [10, 10, 10, 10], // top, left, bottom, right in mm
+                filename:     `Machinecraft_Daily_Report_${currentDateStr}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Use html2pdf if loaded, fallback to native window.print()
+            if (window.html2pdf) {
+                // Temporary class for export styling
+                const originalBg = document.body.style.background;
+                html2pdf().set(opt).from(container).save().then(() => {
+                    console.log("PDF export completed successfully!");
+                }).catch(err => {
+                    console.warn("html2pdf failed, falling back to print dialog:", err);
+                    window.print();
+                });
+            } else {
+                window.print();
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
